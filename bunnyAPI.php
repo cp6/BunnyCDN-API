@@ -18,6 +18,7 @@ class BunnyAPI
     /**
      * Sets access key and the storage name, makes FTP connection with this
      * @param string $api_key (storage zone password)
+     * @return string
      * @throws Exception
      */
     //public function __construct($api_key)
@@ -27,6 +28,7 @@ class BunnyAPI
             throw new Exception("You must provide an API key");
         }
         $this->api_key = $api_key;
+        return json_encode(array('response' => 'success', 'action' => 'apiKey'));
     }
 
     /**
@@ -45,7 +47,7 @@ class BunnyAPI
         ftp_pasv($conn_id, true);
         if ($conn_id) {
             $this->connection = $conn_id;
-            return "Connection made to " . (self::HOSTNAME) . "";
+            return json_encode(array('response' => 'success', 'action' => 'zoneConnect'));
         } else {
             throw new Exception("Could not make FTP connection to " . (self::HOSTNAME) . "");
         }
@@ -370,7 +372,7 @@ class BunnyAPI
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_mkdir($this->connection, $name)) {
-            return "Successfully created folder $name";
+            return json_encode(array('response' => 'success', 'action' => 'createFolder'));
         } else {
             throw new Exception("Could not create folder $name");
         }
@@ -387,7 +389,7 @@ class BunnyAPI
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_rmdir($this->connection, $name)) {
-            return "Successfully deleted $name";
+            return json_encode(array('response' => 'success', 'action' => 'deleteFolder'));
         } else {
             throw new Exception("Could not delete $name");
         }
@@ -404,7 +406,7 @@ class BunnyAPI
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_delete($this->connection, $name)) {
-            return "Successfully deleted $name";
+            return json_encode(array('response' => 'success', 'action' => 'deleteFile'));
         } else {
             throw new Exception("Could not delete $name");
         }
@@ -427,7 +429,7 @@ class BunnyAPI
                 $file_name = $value['ObjectName'];
                 $full_name = "$dir/$file_name";
                 if (ftp_delete($this->connection, $full_name)) {
-                    echo "Deleted $full_name<br>";
+                    echo json_encode(array('response' => 'success', 'action' => 'deleteAllFiles'));
                 } else {
                     throw new Exception("Could not delete $full_name");
                 }
@@ -451,7 +453,7 @@ class BunnyAPI
         foreach ($obj as $file) {
             if (!is_dir($file)) {
                 if (ftp_put($this->connection, "" . $place . "$file", "$dir/$file", $mode)) {
-                    echo "Successfully uploaded <b>" . $place . "$file</b> as <b>" . $place . "/" . $file . "</b>";
+                    echo json_encode(array('response' => 'success', 'action' => 'uploadAllFiles'));
                 } else {
                     throw new Exception("Error uploading " . $place . "$file as " . $place . "/" . $file . "");
                 }
@@ -506,7 +508,7 @@ class BunnyAPI
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_chdir($this->connection, $moveto)) {
-            return "Successfully changed to $moveto";
+            return json_encode(array('response' => 'success', 'action' => 'changeDir'));
         } else {
             throw new Exception("Error moving to $moveto");
         }
@@ -522,7 +524,7 @@ class BunnyAPI
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_cdup($this->connection)) {
-            return "Successfully moved to parent dir";
+            return json_encode(array('response' => 'success', 'action' => 'moveUpOne'));
         } else {
             throw new Exception("Error moving to parent dir");
         }
@@ -540,7 +542,7 @@ class BunnyAPI
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_rename($this->connection, $old, $new)) {
-            return "Successfully renamed $old to $new";
+            return json_encode(array('response' => 'success', 'action' => 'rename'));
         } else {
             throw new Exception("Error renaming $old to $new");
         }
@@ -558,7 +560,7 @@ class BunnyAPI
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_rename($this->connection, $file, $move_to)) {
-            return "Successfully renamed $file to $move_to";
+            return json_encode(array('response' => 'success', 'action' => 'moveFile'));
         } else {
             throw new Exception("Error renaming $file to $move_to");
         }
@@ -577,7 +579,7 @@ class BunnyAPI
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_get($this->connection, $save_as, $get_file, $mode)) {
-            return "Successfully downloaded <b>$get_file</b> as <b>$save_as</b>";
+            return json_encode(array('response' => 'success', 'action' => 'downloadFile'));
         } else {
             throw new Exception("Error downloading $get_file as $save_as");
         }
@@ -601,7 +603,7 @@ class BunnyAPI
             if ($value['IsDirectory'] == false) {
                 $file_name = $value['ObjectName'];
                 if (ftp_get($this->connection, "" . $dl_into . "$file_name", $file_name, $mode)) {
-                    echo "Successfully downloaded <b>$file_name</b> to <b>" . $dl_into . "$file_name</b>";
+                    echo json_encode(array('response' => 'success', 'action' => 'downloadAll'));
                 } else {
                     throw new Exception("Error downloading $file_name to " . $dl_into . "$file_name");
                 }
@@ -622,7 +624,7 @@ class BunnyAPI
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_put($this->connection, $upload_as, $upload, $mode)) {
-            return "Successfully uploaded <b>$upload</b> as <b>$upload_as</b>";
+            return json_encode(array('response' => 'success', 'action' => 'uploadFile'));
         } else {
             throw new Exception("Error uploading $upload as $upload_as");
         }
@@ -751,7 +753,7 @@ class BunnyAPI
     public function closeConnection()
     {
         if (ftp_close($this->connection)) {
-            return "Connection to " . (self::HOSTNAME) . " successfully closed";
+            return json_encode(array('response' => 'success', 'action' => 'closeConnection'));
         } else {
             throw new Exception("Error closing connection to " . (self::HOSTNAME) . "");
         }
