@@ -46,7 +46,6 @@ If you want to interact with storage zones you will need the name and password w
 * Set force SSL for pull zone
 * List pull zone HTTP access logs
 
-
 ## Usage
 Usage is simple, make sure the class file is included
 ```php
@@ -165,6 +164,8 @@ $bunny->deleteAllFiles($dir);
 ---
 
 Rename a file or folder
+
+BunnyCDN does not allow for ftp_rename so file is downloaded, re-uploaded as new name and then deleted locally.
 ```php
 $bunny->rename($old_name, $new_name);
 ```
@@ -367,7 +368,7 @@ $bunny->pullZoneLogs($id, $date);
 
 `$id` Pull zone id `int`
 
-`$date` Date for logs, only past 3 days (dd-mm-yy) `string`
+`$date` Date for logs, only past 3 days (mm-dd-yy) `string`
 
 ---
 
@@ -428,7 +429,54 @@ Close connection (Optional)
 $bunny->closeConnection();
 ```
 
+
+### MySQL Functions
+
+Run `MySQL_database.sql`
+
+Put details in `db_connect();`
+
+---
+
+Insert Pull zones into database
+```php
+$bunny->insertPullZones();
+```
+---
+
+Insert Storage zones into database
+```php
+$bunny->insertStorageZones();
+```
+---
+
+Insert Pull zone logs into database
+```php
+$bunny->insertPullZoneLogs($id, $date);
+```
+`$id` Pull zone id `int`
+
+`$date` Date for logs, only past 3 days (mm-dd-yy) `string`
+
+---
+
 ## TODO
 
 * Access more refined, individual data
-* Better error handling
+* Improve action logging
+
+## VERSIONS
+
+#### 1.1 
+
+* Fixed rename file function
+* Introduced MySQL functions (MySQL_database.sql)
+* Log actions
+* Store Pull and Storage zone basic data
+* Fixed Storage zone requests log documentation for date (dd-mm-yy -> mm-dd-yy)
+* Added formatted responses for most actions
+
+#### 1.0
+
+* Core actions
+* Basic FTP commands for Storage zone interaction

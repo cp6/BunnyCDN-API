@@ -2,7 +2,7 @@
 
 /**
  * Bunny CDN storage zone API class
- * @version  1.0
+ * @version  1.1
  */
 class BunnyAPI
 {
@@ -51,6 +51,21 @@ class BunnyAPI
         } else {
             throw new Exception("Could not make FTP connection to " . (self::HOSTNAME) . "");
         }
+    }
+
+    /**
+     * Sets the MySQL connection (Optional! only if using MySQL functions)
+     * @return object
+     */
+    public function db_connect()
+    {
+        $db_user = 'root';
+        $db_password = '';
+        $db = "mysql:host=127.0.0.1;dbname=bunnycdn;charset=utf8mb4";
+        $options = array(
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC);
+        return new PDO($db, $db_user, $db_password, $options);
     }
 
     /**
@@ -123,26 +138,34 @@ class BunnyAPI
     /**
      * Purge the pull zone with id
      * @param int $id
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function purgePullZone($id)
+    public function purgePullZone($id, $db_log = 0)
     {
         if (is_null($this->api_key))
             throw new Exception("apiKey() is not set");
+        if ($db_log == 1) {
+            $this->actionsLog('PURGE PZ', $id);
+        }
         return $this->APIcall('POST', "pullzone/$id/purgeCache");
     }
 
     /**
      * Delete pull zone for id
      * @param int $id
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function deletePullZone($id)
+    public function deletePullZone($id, $db_log = 0)
     {
         if (is_null($this->api_key))
             throw new Exception("apiKey() is not set");
+        if ($db_log == 1) {
+            $this->actionsLog('DELETE PZ', $id);
+        }
         return $this->APIcall('DELETE', "pullzone/$id");
     }
 
@@ -150,13 +173,17 @@ class BunnyAPI
      * Add hostname to pull zone for id
      * @param int $id
      * @param string $hostname
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function addHostnamePullZone($id, $hostname)
+    public function addHostnamePullZone($id, $hostname, $db_log = 0)
     {
         if (is_null($this->api_key))
             throw new Exception("apiKey() is not set");
+        if ($db_log == 1) {
+            $this->actionsLog('ADD HN', $id, $hostname);
+        }
         return $this->APIcall('POST', 'pullzone/addHostname', json_encode(array("PullZoneId" => $id, "Hostname" => $hostname)));
     }
 
@@ -164,13 +191,17 @@ class BunnyAPI
      * Remove hostname for pull zone
      * @param int $id
      * @param string $hostname
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function removeHostnamePullZone($id, $hostname)
+    public function removeHostnamePullZone($id, $hostname, $db_log = 0)
     {
         if (is_null($this->api_key))
             throw new Exception("apiKey() is not set");
+        if ($db_log == 1) {
+            $this->actionsLog('REMOVE HN', $id, $hostname);
+        }
         return $this->APIcall('DELETE', 'pullzone/deleteHostname', json_encode(array("id" => $id, "hostname" => $hostname)));
     }
 
@@ -192,7 +223,7 @@ class BunnyAPI
     /**
      * Returns log data array for pull zone id
      * @param int $id
-     * @param string $date Must be within past 3 days (dd-mm-yy)
+     * @param string $date Must be within past 3 days (mm-dd-yy)
      * @return array
      * @throws Exception
      */
@@ -248,27 +279,35 @@ class BunnyAPI
 
     /**
      * Create storage zone
-     * @param $name
+     * @param string $name
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function addStorageZone($name)
+    public function addStorageZone($name, $db_log = 0)
     {
         if (is_null($this->api_key))
             throw new Exception("apiKey() is not set");
+        if ($db_log == 1) {
+            $this->actionsLog('ADD SZ', $name);
+        }
         return $this->APIcall('POST', 'storagezone', json_encode(array("Name" => $name)));
     }
 
     /**
      * Delete storage zone
      * @param int $id
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function deleteStorageZone($id)
+    public function deleteStorageZone($id, $db_log = 0)
     {
         if (is_null($this->api_key))
             throw new Exception("apiKey() is not set");
+        if ($db_log == 1) {
+            $this->actionsLog('DELETE SZ', $id);
+        }
         return $this->APIcall('DELETE', "storagezone/$id");
     }
 
@@ -364,14 +403,18 @@ class BunnyAPI
     /**
      * Create a folder
      * @param string $name folder name to create
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function createFolder($name)
+    public function createFolder($name, $db_log = 0)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_mkdir($this->connection, $name)) {
+            if ($db_log == 1) {
+                $this->actionsLog('CREATE FOLDER', $name);
+            }
             return json_encode(array('response' => 'success', 'action' => 'createFolder'));
         } else {
             throw new Exception("Could not create folder $name");
@@ -381,14 +424,18 @@ class BunnyAPI
     /**
      * Delete a folder (if empty)
      * @param string $name folder name to delete
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function deleteFolder($name)
+    public function deleteFolder($name, $db_log = 0)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_rmdir($this->connection, $name)) {
+            if ($db_log == 1) {
+                $this->actionsLog('DELETE FOLDER', $name);
+            }
             return json_encode(array('response' => 'success', 'action' => 'deleteFolder'));
         } else {
             throw new Exception("Could not delete $name");
@@ -398,14 +445,21 @@ class BunnyAPI
     /**
      * Delete a file
      * @param string $name file to delete
+     * @param int $db_log log action to deleted_files table
      * @return string
      * @throws Exception
      */
-    public function deleteFile($name)
+    public function deleteFile($name, $db_log = 0)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_delete($this->connection, $name)) {
+            if ($db_log == 1) {
+                $path_data = pathinfo($name);
+                $db = $this->db_connect();
+                $insert = $db->prepare('INSERT INTO `deleted_files` (`zone_name`, `file`, `dir`) VALUES (?, ?, ?)');
+                $insert->execute([$this->storage_name, $path_data['basename'], $path_data['dirname']]);
+            }
             return json_encode(array('response' => 'success', 'action' => 'deleteFile'));
         } else {
             throw new Exception("Could not delete $name");
@@ -442,10 +496,11 @@ class BunnyAPI
      * @param string $dir upload all files from here
      * @param string $place upload the files to this location
      * @param int $mode
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function uploadAllFiles($dir, $place, $mode = FTP_BINARY)
+    public function uploadAllFiles($dir, $place, $mode = FTP_BINARY, $db_log = 0)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -453,6 +508,9 @@ class BunnyAPI
         foreach ($obj as $file) {
             if (!is_dir($file)) {
                 if (ftp_put($this->connection, "" . $place . "$file", "$dir/$file", $mode)) {
+                    if ($db_log == 1) {
+                        $this->actionsLog('UPLOAD FILE', "" . $place . "$file", "$dir/$file");
+                    }
                     echo json_encode(array('response' => 'success', 'action' => 'uploadAllFiles'));
                 } else {
                     throw new Exception("Error uploading " . $place . "$file as " . $place . "/" . $file . "");
@@ -531,20 +589,37 @@ class BunnyAPI
     }
 
     /**
-     * rename a file or folder
-     * @param string $old current
-     * @param string $new rename to
+     * Renames a file
+     * @note Downloads and re-uploads file as BunnyCDN has blocked ftp_rename()
+     * @param string $old_dir current file directory
+     * @param string $old_name current filename
+     * @param string $new_dir rename file to directory
+     * @param string $new_name rename file to
+     * @param int $db_log log change into file_history table
      * @return string
      * @throws Exception
      */
-    public function rename($old, $new)
+    public function rename($old_dir, $old_name, $new_dir, $new_name, $db_log = 0)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
-        if (ftp_rename($this->connection, $old, $new)) {
-            return json_encode(array('response' => 'success', 'action' => 'rename'));
+        $path_data = pathinfo("" . $old_dir . "$old_name");
+        $file_type = $path_data['extension'];
+        if (ftp_get($this->connection, "tempRENAME.$file_type", "" . $old_dir . "$old_name", FTP_BINARY)) {
+            if (ftp_put($this->connection, "$new_dir" . $new_name . "", "tempRENAME.$file_type", FTP_BINARY)) {
+                if (ftp_delete($this->connection, "" . $old_dir . "$old_name")) {
+                    if ($db_log == 1) {
+                        $db = $this->db_connect();
+                        $insert = $db->prepare('INSERT INTO file_history (new_name, old_name, zone_name, new_dir, old_dir) 
+                                 VALUES (?, ?, ?, ?, ?)');
+                        $insert->execute([$new_name, $old_name, $this->storage_name, $new_dir, $old_dir]);
+                        unlink("tempRENAME.$file_type");//Delete temp file
+                    }
+                    return json_encode(array('response' => 'success', 'action' => 'rename'));
+                }
+            }
         } else {
-            throw new Exception("Error renaming $old to $new");
+            throw new Exception("Error renaming $old_name to $new_name");
         }
     }
 
@@ -552,14 +627,18 @@ class BunnyAPI
      * move a file
      * @param string $file 'path/filename.mp4'
      * @param string $move_to 'path/path/filename.mp4'
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function moveFile($file, $move_to)
+    public function moveFile($file, $move_to, $db_log = 0)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_rename($this->connection, $file, $move_to)) {
+            if ($db_log == 1) {
+                $this->actionsLog('MOVE FILE', $file, $move_to);
+            }
             return json_encode(array('response' => 'success', 'action' => 'moveFile'));
         } else {
             throw new Exception("Error renaming $file to $move_to");
@@ -571,14 +650,18 @@ class BunnyAPI
      * @param string $save_as Save as when downloaded
      * @param string $get_file File to download
      * @param int $mode
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function downloadFile($save_as, $get_file, $mode = FTP_BINARY)
+    public function downloadFile($save_as, $get_file, $mode = FTP_BINARY, $db_log = 0)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_get($this->connection, $save_as, $get_file, $mode)) {
+            if ($db_log == 1) {
+                $this->actionsLog('DOWNLOAD', $save_as, $get_file);
+            }
             return json_encode(array('response' => 'success', 'action' => 'downloadFile'));
         } else {
             throw new Exception("Error downloading $get_file as $save_as");
@@ -590,10 +673,11 @@ class BunnyAPI
      * @param string $dir_dl_from directory to download all from
      * @param string $dl_into local folder to download into
      * @param int $mode FTP mode for download
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function downloadAll($dir_dl_from = '', $dl_into = '', $mode = FTP_BINARY)
+    public function downloadAll($dir_dl_from = '', $dl_into = '', $mode = FTP_BINARY, $db_log = 0)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -603,6 +687,9 @@ class BunnyAPI
             if ($value['IsDirectory'] == false) {
                 $file_name = $value['ObjectName'];
                 if (ftp_get($this->connection, "" . $dl_into . "$file_name", $file_name, $mode)) {
+                    if ($db_log == 1) {
+                        $this->actionsLog('DOWNLOAD', "" . $dl_into . "$file_name", $file_name);
+                    }
                     echo json_encode(array('response' => 'success', 'action' => 'downloadAll'));
                 } else {
                     throw new Exception("Error downloading $file_name to " . $dl_into . "$file_name");
@@ -616,14 +703,18 @@ class BunnyAPI
      * @param string $upload File to upload
      * @param string $upload_as Save as when uploaded
      * @param int $mode
+     * @param int $db_log
      * @return string
      * @throws Exception
      */
-    public function uploadFile($upload, $upload_as, $mode = FTP_BINARY)
+    public function uploadFile($upload, $upload_as, $mode = FTP_BINARY, $db_log = 0)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
         if (ftp_put($this->connection, $upload_as, $upload, $mode)) {
+            if ($db_log == 1) {
+                $this->actionsLog('UPLOAD', $upload, $upload_as);
+            }
             return json_encode(array('response' => 'success', 'action' => 'uploadFile'));
         } else {
             throw new Exception("Error uploading $upload as $upload_as");
@@ -758,4 +849,91 @@ class BunnyAPI
             throw new Exception("Error closing connection to " . (self::HOSTNAME) . "");
         }
     }
+
+    /**
+     * @note Below begins the MySQL database functions
+     * @note These are completely optional
+     * @note Please ensure that you have edited db_connect() beginning up at line 56
+     * @note Also ran MySQL_database.sql file
+     */
+
+    /**
+     * Inserts pull zones into `pullzones` database table
+     * @return string
+     */
+    public function insertPullZones()
+    {
+        $db = $this->db_connect();
+        $data = json_decode($this->listPullZones(), true);
+        foreach ($data as $aRow) {
+            if ($aRow['Enabled'] == true) {
+                $enabled = 1;
+            } else {
+                $enabled = 0;
+            }
+            $insert = $db->prepare('INSERT IGNORE INTO `pullzones` (`id`, `name`, `origin_url`, `enabled`, `bandwidth_used`, `bandwidth_limit`,
+                                `monthly_charge`, `storage_zone_id`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+            $insert->execute([$aRow['Id'], $aRow['Name'], $aRow['OriginUrl'], $enabled,
+                $aRow['MonthlyBandwidthUsed'], $aRow['MonthlyBandwidthLimit'], $aRow['MonthlyCharges'], $aRow['StorageZoneId']]);
+        }
+        return json_encode(array('response' => 'success', 'action' => 'insertPullZoneLogs'));
+    }
+
+    /**
+     * Inserts storage zones into `storagezones` database table
+     * @return string
+     */
+    public function insertStorageZones()
+    {
+        $db = $this->db_connect();
+        $data = json_decode($this->listStorageZones(), true);
+        foreach ($data as $aRow) {
+            if ($aRow['Deleted'] == false) {
+                $enabled = 1;
+            } else {
+                $enabled = 0;
+            }
+            $insert = $db->prepare('INSERT IGNORE INTO `storagezones` (`id`, `name`, `storage_used`, `enabled`, `files_stored`, `date_modified`) 
+                VALUES (?, ?, ?, ?, ?, ?)');
+            $insert->execute([$aRow['Id'], $aRow['Name'], $aRow['StorageUsed'], $enabled,
+                $aRow['FilesStored'], $aRow['DateModified']]);
+        }
+        return json_encode(array('response' => 'success', 'action' => 'insertPullZoneLogs'));
+    }
+
+    /**
+     * Inserts pull zone logs into `logs` database table
+     * @param int $id
+     * @param string $date
+     * @return string
+     */
+    public function insertPullZoneLogs($id, $date)
+    {
+        $db = $this->db_connect();
+        $data = $this->pullZoneLogs($id, $date);
+        foreach ($data as $aRow) {
+            $insert_overview = $db->prepare('INSERT IGNORE INTO `log_main` (`zid`, `rid`, `result`, `referer`, `file_url`, `datetime`) VALUES (?, ?, ?, ?, ?, ?)');
+            $insert_overview->execute([$aRow['zone_id'], $aRow['request_id'], $aRow['cache_result'], $aRow['referer'],
+                $aRow['file_url'], $aRow['datetime']]);
+            $insert_main = $db->prepare('INSERT IGNORE INTO `log_more` (`zid`, `rid`, `status`, `bytes`, `ip`,
+                `user_agent`, `cdn_dc`, `country_code`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+            $insert_main->execute([$aRow['zone_id'], $aRow['request_id'], $aRow['status'], $aRow['bytes'], $aRow['ip'],
+                $aRow['user_agent'], $aRow['cdn_dc'], $aRow['country_code']]);
+        }
+        return json_encode(array('response' => 'success', 'action' => 'insertPullZoneLogs'));
+    }
+
+    /**
+     * Action logger for broader actions
+     * @param string $task
+     * @param string $file
+     * @param string $file_other
+     */
+    public function actionsLog($task, $file, $file_other = NULL)
+    {
+        $db = $this->db_connect();
+        $insert = $db->prepare('INSERT INTO `actions` (`task`, `zone_name`, `file`, `file_other`) VALUES (?, ?, ?, ?)');
+        $insert->execute([$task, $this->storage_name, $file, $file_other]);
+    }
+
 }
