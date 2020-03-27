@@ -55,7 +55,7 @@ require_once('bunnyAPI.php');
 Then set your API key
 ```php
 $bunny = new bunnyAPI();
-$bunny->apiKey($api_key)('XXXX-XXXX-XXXX');//Bunny api key
+$bunny->apiKey('XXXX-XXXX-XXXX');//Bunny api key
 ```
 ---
 
