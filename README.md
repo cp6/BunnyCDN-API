@@ -4,6 +4,33 @@ The most comprehensive, feature packed and easy to use PHP class for the BunnyCD
 This class whilst having a main focus on storage zone interaction includes pull zone features. 
 Combining API with FTP, managing and using BunnyCDN storage zones just got easier.
 
+### Version 1.2 changelog (4/4/2020)
+
+1. Added ```__contruct()``` for errors/debugging and execution time
+
+2. Added ```convertBytes()``` for converting and formatting bytes to KB|MB|GB
+
+3. Updated ```insertPullZones()``` & ```insertStorageZones()``` to update MySQL values if already existing
+
+4. Added ```boolToInt()``` function, converts ```true/false``` to ```1/0```
+
+5. Added ```pullZoneHostnames()``` lists pullzone hostnames and amount
+
+6. Added ```addBlockedIpPullZone()``` add an ip to block for a pullzone
+
+7. Added ```unBlockedIpPullZone()``` unblock an ip from pullzone
+
+8. Added ```listBlockedIpPullZone()``` lists blocked ip's for a pullzone
+
+9. Changed ```$db_log``` to ```= false``` INSTEAD OF ```= 0``` in function arguments
+
+10. Updated ```balance()```, ```monthCharges()```, ```monthChargeBreakdown()``` to be independent
+
+11. Added ```totalBillingAmount()``` lists total amount and first date time
+
+12. ```updater.sql``` to update existing databases (else run ```MySQL_database.sql```)
+
+
 ### Requires
 
 For Pull zone, billing and statistics API interaction you will need your BunnyCDN API key, this is found in your dashboard in the My Account section.
@@ -55,7 +82,13 @@ require_once('bunnyAPI.php');
 Then set your API key
 ```php
 $bunny = new bunnyAPI();
-$bunny->apiKey($api_key)('XXXX-XXXX-XXXX');//Bunny api key
+$bunny->apiKey('XXXX-XXXX-XXXX');//Bunny api key
+```
+---
+
+To show PHP errors and max execution time of 300 seconds
+```php
+$bunny = new bunnyAPI(true, 3000);
 ```
 ---
 
@@ -317,6 +350,12 @@ $bunny->deletePullZone($id);
 
 ---
 
+Lists pullzone hostnames and amount
+```php
+$bunny->pullZoneHostnames($pullzone_id);
+```
+---
+
 Add hostname to pull zone
 ```php
 $bunny->addHostnamePullZone($id, $hostname);
@@ -349,6 +388,27 @@ $bunny->forceSSLPullZone($id, $hostname, $force_ssl);
 `$hostname` Affected hostname  `string`
 
 `$force_ssl` True = on, FALSE = off  `bool`
+
+---
+
+Add ip to block for pullzone
+```php
+$bunny->addBlockedIpPullZone($pullzone_id, $ip, $db_log = false);
+```
+
+---
+
+Un block an ip for pullzone
+```php
+$bunny->unBlockedIpPullZone($pullzone_id, $ip, $db_log = false);
+```
+
+---
+
+List all blocked ip's for pullzone
+```php
+$bunny->listBlockedIpPullZone($pullzone_id);
+```
 
 ---
 
@@ -412,6 +472,14 @@ returns `array`
 
 ---
 
+Lists total billing amount and first date time
+```php
+$bunny->totalBillingAmount();
+```
+returns `array`
+
+---
+
 Apply a coupon code
 ```php
 $bunny->applyCoupon($code);
@@ -422,6 +490,20 @@ Set Json header
 ```php
 $bunny->jsonHeader();
 ```
+---
+
+Convert/format bytes to other data types
+```php
+$bunny->convertBytes($bytes, $convert_to = 'GB', $format = true, $decimals = 2);
+```
+---
+
+Convert bool to int value
+```php
+$bunny->boolToInt($bool);
+```
+returns `int`
+
 ---
 
 Close connection (Optional)
