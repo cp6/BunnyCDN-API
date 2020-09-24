@@ -138,6 +138,26 @@ class BunnyAPI
     }
 
     /**
+     * Creates pull zone
+     * @param string $name
+     * @param string $origin
+     * @param array $args
+     */
+    public function createPullZone($name, $origin, $args = array())
+    {
+        if (is_null($this->api_key))
+            throw new Exception("apiKey() is not set");
+        $args = array_merge(
+            array(
+                'Name' => $name,
+                'OriginUrl' => $origin,
+            ),
+            $args
+        );
+        return $this->APIcall('POST', 'pullzone', json_encode($args));
+    }
+
+    /**
      * Returns pull zone information for id
      * @param int $id
      * @return string
@@ -248,6 +268,17 @@ class BunnyAPI
             $this->actionsLog('REMOVE HN', $id, $hostname);
         }
         return $this->APIcall('DELETE', 'pullzone/deleteHostname', json_encode(array("id" => $id, "hostname" => $hostname)));
+    }
+
+    /**
+     * Load a free certificate provided by Let’s Encrypt.
+     * @param string $hostname
+     */
+    public function addFreeCertificate($hostname)
+    {
+        if (is_null($this->api_key))
+            throw new Exception("apiKey() is not set");
+        return $this->APIcall('GET', 'pullzone/loadFreeCertificate', array('hostname' => $hostname));
     }
 
     /**
