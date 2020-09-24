@@ -85,6 +85,7 @@ class BunnyAPI
 
     /**
      * cURL execution with headers and parameters
+     * @throws Exception
      * @param string $method
      * @param string $url
      * @param boolean $params
@@ -92,6 +93,10 @@ class BunnyAPI
      */
     private function APIcall($method, $url, $params = false)
     {
+        if (is_null($this->api_key)) {
+            throw new Exception("apiKey() is not set");
+        }
+
         $curl = curl_init();
         switch ($method) {
             case "POST":
@@ -132,8 +137,6 @@ class BunnyAPI
      */
     public function listPullZones()
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         return $this->APIcall('GET', 'pullzone');
     }
 
@@ -145,8 +148,6 @@ class BunnyAPI
      */
     public function createPullZone($name, $origin, $args = array())
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         $args = array_merge(
             array(
                 'Name' => $name,
@@ -165,8 +166,6 @@ class BunnyAPI
      */
     public function pullZoneData($id)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         return $this->APIcall('GET', "pullzone/$id");
     }
 
@@ -179,8 +178,6 @@ class BunnyAPI
      */
     public function purgePullZone($id, $db_log = false)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         if ($db_log) {
             $this->actionsLog('PURGE PZ', $id);
         }
@@ -196,8 +193,6 @@ class BunnyAPI
      */
     public function deletePullZone($id, $db_log = false)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         if ($db_log) {
             $this->actionsLog('DELETE PZ', $id);
         }
@@ -212,8 +207,6 @@ class BunnyAPI
      */
     public function pullZoneHostnames($id)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         $data = json_decode($this->pullZoneData($id), true);
         if (isset($data['Hostnames'])) {
             $hn_count = count($data['Hostnames']);
@@ -244,8 +237,6 @@ class BunnyAPI
      */
     public function addHostnamePullZone($id, $hostname, $db_log = false)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         if ($db_log) {
             $this->actionsLog('ADD HN', $id, $hostname);
         }
@@ -262,8 +253,6 @@ class BunnyAPI
      */
     public function removeHostnamePullZone($id, $hostname, $db_log = false)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         if ($db_log) {
             $this->actionsLog('REMOVE HN', $id, $hostname);
         }
@@ -276,8 +265,6 @@ class BunnyAPI
      */
     public function addFreeCertificate($hostname)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         return $this->APIcall('GET', 'pullzone/loadFreeCertificate', array('hostname' => $hostname));
     }
 
@@ -291,8 +278,6 @@ class BunnyAPI
      */
     public function forceSSLPullZone($id, $hostname, $force_ssl = true)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         return $this->APIcall('POST', 'pullzone/setForceSSL', json_encode(array("PullZoneId" => $id, "HostName" => $hostname, 'ForceSSl' => $force_ssl)));
     }
 
@@ -304,8 +289,6 @@ class BunnyAPI
      */
     public function listBlockedIpPullZone($id)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         $data = json_decode($this->pullZoneData($id), true);
         if (isset($data['BlockedIps'])) {
             $ip_count = count($data['BlockedIps']);
@@ -332,8 +315,6 @@ class BunnyAPI
      */
     public function addBlockedIpPullZone($id, $ip, $db_log = false)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         if ($db_log) {
             $this->actionsLog('ADD BLOCKED IP', $id, $ip);
         }
@@ -350,8 +331,6 @@ class BunnyAPI
      */
     public function unBlockedIpPullZone($id, $ip, $db_log = false)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         if ($db_log) {
             $this->actionsLog('UN BLOCKED IP', $id, $ip);
         }
@@ -367,8 +346,6 @@ class BunnyAPI
      */
     public function pullZoneLogs($id, $date)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, "https://logging.bunnycdn.com/$date/$id.log");
         curl_setopt($curl, CURLOPT_HTTPHEADER, array(
@@ -410,8 +387,6 @@ class BunnyAPI
      */
     public function listStorageZones()
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         return $this->APIcall('GET', 'storagezone');
     }
 
@@ -424,8 +399,6 @@ class BunnyAPI
      */
     public function addStorageZone($name, $db_log = false)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         if ($db_log) {
             $this->actionsLog('ADD SZ', $name);
         }
@@ -441,8 +414,6 @@ class BunnyAPI
      */
     public function deleteStorageZone($id, $db_log = false)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         if ($db_log) {
             $this->actionsLog('DELETE SZ', $id);
         }
@@ -457,8 +428,6 @@ class BunnyAPI
      */
     public function purgeCache($url)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         return $this->APIcall('POST', 'purge', json_encode(array("url" => $url)));
     }
 
@@ -495,8 +464,6 @@ class BunnyAPI
      */
     public function getStatistics()
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         return $this->APIcall('GET', 'statistics');
     }
 
@@ -507,8 +474,6 @@ class BunnyAPI
      */
     public function getBilling()
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         return $this->APIcall('GET', 'billing');
     }
 
@@ -570,8 +535,6 @@ class BunnyAPI
      */
     public function applyCoupon($code)
     {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
         return $this->APIcall('POST', 'applycode', json_encode(array("couponCode" => $code)));
     }
 
