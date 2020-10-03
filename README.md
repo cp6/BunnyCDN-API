@@ -88,7 +88,7 @@ $bunny->apiKey('XXXX-XXXX-XXXX');//Bunny api key
 
 To show PHP errors and max execution time of 300 seconds
 ```php
-$bunny = new bunnyAPI(true, 3000);
+$bunny = new bunnyAPI(true, 300);
 ```
 ---
 
