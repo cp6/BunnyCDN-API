@@ -278,8 +278,22 @@ class BunnyAPI
      */
     public function forceSSLPullZone($id, $hostname, $force_ssl = true)
     {
-        return $this->APIcall('POST', 'pullzone/setForceSSL', json_encode(array("PullZoneId" => $id, "HostName" => $hostname, 'ForceSSl' => $force_ssl)));
+        return $this->APIcall('POST', 'pullzone/setForceSSL', json_encode(array("PullZoneId" => $id, "Hostname" => $hostname, 'ForceSSL' => $force_ssl)));
     }
+
+    /**
+     * Set Free SSL for hostname
+     * @param string $hostname
+     * @return string
+     * @throws Exception
+     */
+    public function freeSSL($hostname)
+    {
+        if (is_null($this->api_key))
+            throw new Exception("apiKey() is not set");
+        return $this->APIcall('GET', 'pullzone/loadFreeCertificate?hostname='.$hostname);
+    }
+
 
     /**
      * Returns Blocked ip data for pull zone for id
