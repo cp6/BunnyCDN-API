@@ -7,6 +7,7 @@
  */
 class BunnyAPI
 {
+    const API_KEY = 'XXXX-XXXX-XXXX';//BunnyCDN API key
     const API_URL = 'https://bunnycdn.com/api/';//URL for BunnyCDN API
     const STORAGE_API_URL = 'https://storage.bunnycdn.com/';//URL for storage based API
     const HOSTNAME = 'storage.bunnycdn.com';//FTP hostname
@@ -23,6 +24,9 @@ class BunnyAPI
      */
     public function __construct($show_errors = false, $execution_time = 240)
     {
+        if ($this->constApiKeySet()) {
+            $this->api_key = BunnyAPI::API_KEY;
+        }
         ini_set('max_execution_time', $execution_time);
         if ($show_errors) {
             ini_set('display_errors', 1);
@@ -37,7 +41,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function apiKey($api_key)
+    public function apiKey($api_key = '')
     {
         if (!isset($api_key) or trim($api_key) == '') {
             throw new Exception("You must provide an API key");
@@ -84,19 +88,30 @@ class BunnyAPI
     }
 
     /**
+     * Checks if API key has been hard coded with the constant API_KEY
+     */
+    protected function constApiKeySet()
+    {
+        if (!defined("BunnyAPI::API_KEY") || empty(BunnyAPI::API_KEY)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * cURL execution with headers and parameters
-     * @throws Exception
      * @param string $method
      * @param string $url
      * @param boolean $params
      * @return string
+     * @throws Exception
      */
     private function APIcall($method, $url, $params = false)
     {
-        if (is_null($this->api_key)) {
+        if (is_null($this->api_key) && !$this->constApiKeySet()) {
             throw new Exception("apiKey() is not set");
         }
-
         $curl = curl_init();
         switch ($method) {
             case "POST":
@@ -291,7 +306,7 @@ class BunnyAPI
     {
         if (is_null($this->api_key))
             throw new Exception("apiKey() is not set");
-        return $this->APIcall('GET', 'pullzone/loadFreeCertificate?hostname='.$hostname);
+        return $this->APIcall('GET', 'pullzone/loadFreeCertificate?hostname=' . $hostname);
     }
 
 
