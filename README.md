@@ -333,12 +333,28 @@ returns `array`
 
 ---
 
+`$id` Pull zone to get data from `int`
+
+returns `array`
+
+---
+
+
+
 Purge pull zone data
 ```php
 $bunny->purgePullZone($id);
 ```
 
 `$id` Pull zone to purge `int`
+
+---
+
+Add new pullzone data
+```php
+$bunny->createPullZone($name, $origin);
+```
+returns `array`
 
 ---
 
