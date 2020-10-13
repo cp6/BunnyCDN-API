@@ -70,6 +70,7 @@ If you want to interact with storage zones you will need the name and password w
 * Purge pull zone
 * Add hostname to pull zone
 * Remove hostname from pull zone
+* Set free SSL for hostname
 * Set force SSL for pull zone
 * List pull zone HTTP access logs
 
@@ -375,6 +376,15 @@ $bunny->removeHostnamePullZone($id, $hostname);
 `$id` Pull zone hostname be removed from `int`
 
 `$hostname` Hostname to remove `string`
+
+---
+
+Change force SSL status for pull zone
+```php
+$bunny->freeSSL($hostname);
+```
+
+`$hostname` Affected hostname  `string`
 
 ---
 
