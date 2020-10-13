@@ -35,12 +35,12 @@ Combining API with FTP, managing and using BunnyCDN storage zones just got easie
 
 For Pull zone, billing and statistics API interaction you will need your BunnyCDN API key, this is found in your dashboard in the My Account section.
 
-If you want to interact with storage zones you will need the name and password which can be obtained using this class below or at the storage zone panel.
+If you want to interact with storage zones you will need the name and password which can be obtained using this class below ```listPullZones()``` or at the storage zone panel.
 
 ## Features & abilities
 
 * List storage zones
-* Add storage zone
+* Add/create storage zone
 * Delete storage zone
 * Create folder in storage zone
 * Delete folder in storage zone
@@ -79,9 +79,24 @@ Usage is simple, make sure the class file is included
 require_once('bunnyAPI.php');
 ```
 
-Then set your API key
 ```php
-$bunny = new bunnyAPI();
+$bunny = new bunnyAPI();//Initiate the class
+```
+
+#### Setting API key:
+
+**option 1 (preferred)**
+
+Line 10 ```bunnyAPI.php```
+
+```php
+const API_KEY = 'XXXX-XXXX-XXXX';
+```
+
+**option 2**
+
+With ```apiKey()``` (needs setting with each calling of class)
+```php
 $bunny->apiKey('XXXX-XXXX-XXXX');//Bunny api key
 ```
 ---

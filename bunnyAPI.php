@@ -277,10 +277,11 @@ class BunnyAPI
     /**
      * Load a free certificate provided by Let’s Encrypt.
      * @param string $hostname
+     * @return string
      */
-    public function addFreeCertificate($hostname)
+    public function addFreeSSLCertificate($hostname)
     {
-        return $this->APIcall('GET', 'pullzone/loadFreeCertificate', array('hostname' => $hostname));
+        return $this->APIcall('GET', 'pullzone/loadFreeCertificate?hostname=' . $hostname);
     }
 
     /**
@@ -295,20 +296,6 @@ class BunnyAPI
     {
         return $this->APIcall('POST', 'pullzone/setForceSSL', json_encode(array("PullZoneId" => $id, "Hostname" => $hostname, 'ForceSSL' => $force_ssl)));
     }
-
-    /**
-     * Set Free SSL for hostname
-     * @param string $hostname
-     * @return string
-     * @throws Exception
-     */
-    public function freeSSL($hostname)
-    {
-        if (is_null($this->api_key))
-            throw new Exception("apiKey() is not set");
-        return $this->APIcall('GET', 'pullzone/loadFreeCertificate?hostname=' . $hostname);
-    }
-
 
     /**
      * Returns Blocked ip data for pull zone for id
