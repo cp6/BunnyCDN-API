@@ -104,11 +104,11 @@ class BunnyAPI
      * cURL execution with headers and parameters
      * @param string $method
      * @param string $url
-     * @param boolean $params
+     * @param string|boolean $params
      * @return string
      * @throws Exception
      */
-    private function APIcall(string $method, string $url, bool $params = false)
+    private function APIcall(string $method, string $url, $params = false)
     {
 
         if (is_null($this->api_key) && !$this->constApiKeySet()) {
