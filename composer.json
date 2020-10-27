@@ -1,0 +1,15 @@
+{
+    "name": "corbpie/bunny-cdn-api",
+    "description": "Bunny CDN API class for pull and storage zones",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "corbpie",
+            "email": "contact@corbpie.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    }
+}
