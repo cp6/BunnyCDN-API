@@ -211,12 +211,14 @@ $bunny->deleteAllFiles($dir);
 
 ---
 
-Rename a file or folder
+Rename a file
 
-BunnyCDN does not allow for ftp_rename so file is downloaded, re-uploaded as new name and then deleted locally.
+BunnyCDN does not allow for ftp_rename so file copied to new name and then old file deleted.
 ```php
-$bunny->rename($old_name, $new_name);
+$bunny->renameFile($directory, $old_file_name, $new_file_name);
 ```
+
+`$directory` Directory that contains the file `string`
 
 `$old_name` Object that is being renamed `string`
 

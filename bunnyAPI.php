@@ -729,36 +729,33 @@ class BunnyAPI
 
     /**
      * Renames a file
-     * @note Downloads and re-uploads file as BunnyCDN has blocked ftp_rename()
-     * @param string $old_dir current file directory
-     * @param string $old_name current filename
-     * @param string $new_dir rename file to directory
-     * @param string $new_name rename file to
-     * @param bool $db_log log change into file_history table
-     * @return string
+     * Note: This copies a file to the new name and deletes the old file.
+     * No longer uses old method of downloading and re-uploading as new name.
+     * @param string $dir directory inside your storage zone E.g 'pets/'
+     * @param string $file_name file name that is being renamed E.g 'fluffy.jpg'
+     * @param string $new_file_name new name for the file E.g 'young_fluffy.jpg'
+     * @param bool $db_log log rename to MySQL
      * @throws Exception
      */
-    public function rename(string $old_dir, string $old_name, string $new_dir, string $new_name, bool $db_log = false)
+    public function renameFile(string $dir, string $file_name, string $new_file_name, bool $db_log = false)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
-        $path_data = pathinfo("" . $old_dir . "$old_name");
+        $path_data = pathinfo("{$dir}$file_name");
         $file_type = $path_data['extension'];
-        if (ftp_get($this->connection, "tempRENAME.$file_type", "" . $old_dir . "$old_name", FTP_BINARY)) {
-            if (ftp_put($this->connection, "$new_dir" . $new_name . "", "tempRENAME.$file_type", FTP_BINARY)) {
-                if (ftp_delete($this->connection, "" . $old_dir . "$old_name")) {
-                    if ($db_log) {
-                        $db = $this->db_connect();
-                        $insert = $db->prepare('INSERT INTO file_history (new_name, old_name, zone_name, new_dir, old_dir) 
-                                 VALUES (?, ?, ?, ?, ?)');
-                        $insert->execute([$new_name, $old_name, $this->storage_name, $new_dir, $old_dir]);
-                        unlink("tempRENAME.$file_type");//Delete temp file
-                    }
-                    return json_encode(array('response' => 'success', 'action' => 'rename'));
+        if (ftp_get($this->connection, "TEMPFILE.$file_type", "{$dir}$file_name", FTP_BINARY)) {
+            if (ftp_put($this->connection, "{$dir}$new_file_name", "TEMPFILE.$file_type", FTP_BINARY)) {
+                $this->deleteFile("{$dir}$file_name");
+                if ($db_log) {
+                    $db = $this->db_connect();
+                    $insert = $db->prepare('INSERT INTO file_history (new_name, old_name, zone_name, new_dir, old_dir) VALUES (?, ?, ?, ?, ?)');
+                    $insert->execute(["{$dir}$new_file_name", "{$dir}$file_name", $this->storage_name, $dir, $dir]);
                 }
+            } else {
+                throw new Exception("ftp_put fail: {$dir}$new_file_name, TEMPFILE.$file_type");
             }
         } else {
-            throw new Exception("Error renaming $old_name to $new_name");
+            throw new Exception("ftp_get fail: TEMPFILE.$file_type, {$dir}$file_name");
         }
     }
 
