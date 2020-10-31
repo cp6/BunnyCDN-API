@@ -782,23 +782,25 @@ class BunnyAPI
 
     /**
      * Move a file
-     * @param string $file 'path/filename.mp4'
-     * @param string $move_to 'path/path/filename.mp4'
-     * @param bool $db_log
-     * @return string
+     * @param string $dir Directory file is in E.g 'pets/'
+     * @param string $file_name file to move E.g 'small_fluffy.jpg'
+     * @param string $move_to Directory to move file to E.g 'pets/puppy_fluffy/'
      * @throws Exception
      */
-    public function moveFile(string $file, string $move_to, bool $db_log = false)
+    public function moveFile(string $dir, string $file_name, string $move_to)
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
-        if (ftp_rename($this->connection, $file, $move_to)) {
-            if ($db_log) {
-                $this->actionsLog('MOVE FILE', $file, $move_to);
+        $path_data = pathinfo("{$dir}$file_name");
+        $file_type = $path_data['extension'];
+        if (ftp_get($this->connection, "TEMPFILE.$file_type", "{$dir}$file_name", FTP_BINARY)) {
+            if (ftp_put($this->connection, "$move_to{$file_name}", "TEMPFILE.$file_type", FTP_BINARY)) {
+                $this->deleteFile("{$dir}$file_name");
+            } else {
+                throw new Exception("ftp_put fail");
             }
-            return json_encode(array('response' => 'success', 'action' => 'moveFile'));
         } else {
-            throw new Exception("Error renaming $file to $move_to");
+            throw new Exception("ftp_get fail");
         }
     }
 
