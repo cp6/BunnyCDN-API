@@ -3,6 +3,7 @@
   "description": "Bunny CDN API class for pull and storage zones",
   "type": "library",
   "license": "MIT",
+  "version": "v1.2",
   "authors": [
     {
       "name": "corbpie",
