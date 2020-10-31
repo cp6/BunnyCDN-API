@@ -881,6 +881,32 @@ class BunnyAPI
     }
 
     /**
+     * Upload a file with progress percentage written to text file
+     * @param string $upload File to upload E.g 'fluffy.mp4'
+     * @param string $upload_as Save as when uploaded E.g 'pets/fluffy.mp4'
+     * @param string $progress_file File to write the upload progress to
+     * @param bool $db_log Log upload to MySQL
+     */
+    public function uploadFileWithProgress(string $upload, string $upload_as, string $progress_file = 'UPLOAD_PERCENT.txt', bool $db_log = false)
+    {
+        $ftp_url = "ftp://$this->storage_name:$this->access_key@" . BunnyAPI::HOSTNAME . "/$this->storage_name/$upload_as";
+        $size = filesize($upload);
+        $out = fopen($ftp_url, "wb");
+        $in = fopen($upload, "rb");
+        while (!feof($in)) {
+            $buffer = fread($in, 10240);
+            fwrite($out, $buffer);
+            $file_data = intval(ftell($in) / $size * 100);
+            file_put_contents($progress_file, $file_data);
+        }
+        fclose($in);
+        fclose($out);
+        if ($db_log) {
+            $this->actionsLog('UPLOAD', $upload, $upload_as);
+        }
+    }
+
+    /**
      * Returns INT 1 for true and INT 0 for false
      * @param bool $bool
      * @return int
