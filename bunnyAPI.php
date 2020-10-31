@@ -1124,4 +1124,36 @@ class BunnyAPI
         $insert->execute([$task, $this->storage_name, $file, $file_other]);
     }
 
+    /**
+     * Calculate costs of using BunnyCDN
+     * @param int $bytes amount of bytes as bandwidth
+     * @return array
+     */
+    public function costCalculator(int $bytes): array
+    {
+        $zone1 = '0.01';
+        $zone2 = '0.03';
+        $zone3 = '0.045';
+        $zone4 = '0.06';
+        $s500t = '0.005';
+        $s1pb = '0.004';
+        $s2pb = '0.003';
+        $s2pb_plus = '0.0025';
+        $gigabytes = floatval(($bytes / 1073741824));
+        $terabytes = floatval(($gigabytes / 1024));
+        return array(
+            'bytes' => $bytes,
+            'gigabytes' => $gigabytes,
+            'terabytes' => $terabytes,
+            'EU_NA' => ($zone1 * $gigabytes),
+            'ASIA_OC' => ($zone2 * $gigabytes),
+            'SOUTH_AMERICA' => ($zone3 * $gigabytes),
+            'MIDDLE_EAST_AFRICA' => ($zone4 * $gigabytes),
+            'storage_500tb' => sprintf('%f', ($s500t * $terabytes)),
+            'storage_500tb_1PB' => sprintf('%f', ($s1pb * $terabytes)),
+            'storage_1PB_2PB' => sprintf('%f', ($s2pb * $terabytes)),
+            'storage_2PB_PLUS' => sprintf('%f', ($s2pb_plus * $terabytes))
+        );
+    }
+
 }
