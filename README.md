@@ -108,12 +108,14 @@ $bunny = new bunnyAPI(true, 300);
 ---
 
 Storage zone name and access key for storage zone interaction (**not needed if just using pull zone functions**)
+
+Set ```$access_key = ''``` to obtain key automatically (storage name must be accurate)
 ```php
 $bunny->zoneConnect($storagename, $access_key);
 ```
 `$storagename` name of storage zone `string`
 
-`$access_key` key/password to storage zone ```string```
+`$access_key` key/password to storage zone ```string``` **optional**
 
 ---
 

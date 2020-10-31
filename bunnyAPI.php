@@ -57,12 +57,16 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function zoneConnect(string $storage_name, string $access_key)
+    public function zoneConnect(string $storage_name, string $access_key = '')
     {
         $this->storage_name = $storage_name;
-        $this->access_key = $access_key;
+        if (empty($access_key)) {
+            $this->findStorageZoneAccessKey($storage_name);
+        } else {
+            $this->access_key = $access_key;
+        }
         $conn_id = ftp_connect((BunnyAPI::HOSTNAME));
-        $login = ftp_login($conn_id, $storage_name, $access_key);
+        $login = ftp_login($conn_id, $storage_name, $this->access_key);
         ftp_pasv($conn_id, true);
         if ($conn_id) {
             $this->connection = $conn_id;
@@ -70,6 +74,23 @@ class BunnyAPI
         } else {
             throw new Exception("Could not make FTP connection to " . (BunnyAPI::HOSTNAME) . "");
         }
+    }
+
+    /**
+     * Finds storage zone password/access key from storage zone name
+     * @param string $storage_name
+     * @return bool
+     */
+    protected function findStorageZoneAccessKey(string $storage_name)
+    {
+        $data = json_decode($this->listStorageZones(), true);
+        foreach ($data as $zone) {
+            if ($zone['Name'] == $storage_name) {
+                $this->access_key = $zone['Password'];
+                return true;//Found access key
+            }
+        }
+        return false;//Never found access key for said storage zone
     }
 
     /**
