@@ -4,7 +4,7 @@
   "type": "library",
   "license": "MIT",
   "version": "v1.2",
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "authors": [
     {
       "name": "corbpie",
