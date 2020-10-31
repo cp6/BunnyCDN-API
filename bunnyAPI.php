@@ -828,6 +828,32 @@ class BunnyAPI
     }
 
     /**
+     * Download a file with progress percentage written to text file
+     * @param string $save_as Save file as E.g 'fluffy_trick_1.mp4'
+     * @param string $get_file File to download E.g 'pets/fluffy/fluffy_trick_1.mp4'
+     * @param string $progress_file File to write the download progress to
+     * @param bool $db_log Log download to MySQL
+     */
+    public function downloadFileWithProgress(string $save_as, string $get_file, string $progress_file = 'DOWNLOAD_PERCENT.txt', bool $db_log = false)
+    {
+        $ftp_url = "ftp://$this->storage_name:$this->access_key@" . BunnyAPI::HOSTNAME . "/$this->storage_name/$get_file";
+        $size = filesize($ftp_url);
+        $in = fopen($ftp_url, "rb") or die("Cannot open source file");
+        $out = fopen($save_as, "wb");
+        while (!feof($in)) {
+            $buf = fread($in, 10240);
+            fwrite($out, $buf);
+            $file_data = intval(ftell($out) / $size * 100);
+            file_put_contents($progress_file, $file_data);
+        }
+        fclose($out);
+        fclose($in);
+        if ($db_log) {
+            $this->actionsLog('DOWNLOAD', $save_as, $get_file);
+        }
+    }
+
+    /**
      * Download all files in a directory
      * @param string $dir_dl_from directory to download all from
      * @param string $dl_into local folder to download into
