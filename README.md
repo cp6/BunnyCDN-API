@@ -4,38 +4,16 @@ The most comprehensive, feature packed and easy to use PHP class for the BunnyCD
 This class whilst having a main focus on storage zone interaction includes pull zone features. 
 Combining API with FTP, managing and using BunnyCDN storage zones just got easier.
 
-### Version 1.2 changelog (4/4/2020)
 
-1. Added ```__contruct()``` for errors/debugging and execution time
-
-2. Added ```convertBytes()``` for converting and formatting bytes to KB|MB|GB
-
-3. Updated ```insertPullZones()``` & ```insertStorageZones()``` to update MySQL values if already existing
-
-4. Added ```boolToInt()``` function, converts ```true/false``` to ```1/0```
-
-5. Added ```pullZoneHostnames()``` lists pullzone hostnames and amount
-
-6. Added ```addBlockedIpPullZone()``` add an ip to block for a pullzone
-
-7. Added ```unBlockedIpPullZone()``` unblock an ip from pullzone
-
-8. Added ```listBlockedIpPullZone()``` lists blocked ip's for a pullzone
-
-9. Changed ```$db_log``` to ```= false``` INSTEAD OF ```= 0``` in function arguments
-
-10. Updated ```balance()```, ```monthCharges()```, ```monthChargeBreakdown()``` to be independent
-
-11. Added ```totalBillingAmount()``` lists total amount and first date time
-
-12. ```updater.sql``` to update existing databases (else run ```MySQL_database.sql```)
-
+[![Generic badge](https://img.shields.io/badge/version-1.2-blue.svg)](https://shields.io/)
 
 ### Requires
 
 For Pull zone, billing and statistics API interaction you will need your BunnyCDN API key, this is found in your dashboard in the My Account section.
 
-If you want to interact with storage zones you will need the name and password which can be obtained using this class below ```listPullZones()``` or at the storage zone panel.
+If you want to interact with storage zones you will need your BunnyCDN API key set and the name of the storage zone.
+
+```listStorageZones()``` returns all the storage zone data/info for the account.
 
 ## Features & abilities
 
@@ -47,11 +25,14 @@ If you want to interact with storage zones you will need the name and password w
 * Delete file in storage zone
 * Delete all files in a folder in storage zone
 * Download a file from storage zone
+* Download a file from storage zone with progress percentage
 * Download all files in a folder from storage zone
 * Upload file to storage zone
+* Upload file to storage zone with progress percentage
 * Upload all files in a folder to storage zone
 * Rename file or folder in storage zone
 * Move file in storage zone
+* Get file size in storage zone
 * Get directory size in storage zone
 * Navigate/List directories in storage zone
 * List all from storage zone directory
@@ -72,6 +53,7 @@ If you want to interact with storage zones you will need the name and password w
 * Remove hostname from pull zone
 * Set force SSL for pull zone
 * List pull zone HTTP access logs
+* Calculate costs
 
 ## Usage
 Usage is simple, make sure the class file is included
