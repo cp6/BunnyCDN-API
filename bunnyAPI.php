@@ -680,6 +680,19 @@ class BunnyAPI
     }
 
     /**
+     * Get a files size in bytes
+     * @param string $file E.g 'pets/fluffy_young.jpg'
+     * @return int
+     * @throws Exception
+     */
+    public function getFileSize(string $file)
+    {
+        if (is_null($this->connection))
+            throw new Exception("zoneConnect() is not set");
+        return ftp_size($this->connection, $file);
+    }
+
+    /**
      * Returns array with file count and total size
      * @param string $dir directory to do count in
      * @return array
