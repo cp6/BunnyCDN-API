@@ -1,15 +1,21 @@
 {
-    "name": "corbpie/bunny-cdn-api",
-    "description": "Bunny CDN API class for pull and storage zones",
-    "type": "library",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "corbpie",
-            "email": "contact@corbpie.com"
-        }
-    ],
-    "require": {
-        "php": ">=7.4"
+  "name": "corbpie/bunny-cdn-api",
+  "description": "Bunny CDN API class for pull and storage zones",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "corbpie",
+      "email": "contact@corbpie.com"
     }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/cp6/BunnyCDN-API"
+    }
+  ],
+  "require": {
+    "php": ">=7.4"
+  }
 }
