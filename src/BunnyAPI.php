@@ -7,7 +7,7 @@ namespace Corbpie\BunnyCdn;
  * @version  1.2
  * @author corbpie
  */
-class BunnyApi
+class BunnyAPI
 {
     const API_KEY = 'XXXX-XXXX-XXXX';//BunnyCDN API key
     const API_URL = 'https://bunnycdn.com/api/';//URL for BunnyCDN API
