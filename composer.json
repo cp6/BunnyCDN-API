@@ -20,5 +20,10 @@
   "require": {
     "php": ">=7.4",
     "ext-ftp": "*"
+  },
+  "autoload": {
+      "classmap": [
+          "bunnyAPI.php"
+      ]
   }
 }
