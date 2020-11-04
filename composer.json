@@ -22,8 +22,8 @@
     "ext-ftp": "*"
   },
   "autoload": {
-      "classmap": [
-          "bunnyAPI.php"
-      ]
+      "psr-4": {
+          "Corbpie\\BunnyCdn\\": "src/"
+      }
   }
 }
