@@ -3,8 +3,8 @@
 namespace Corbpie\BunnyCdn;
 
 /**
- * Bunny CDN storage zone API class
- * @version  1.2
+ * Bunny CDN pull & storage zone API class
+ * @version  1.3
  * @author corbpie
  */
 class BunnyAPI
@@ -116,7 +116,7 @@ class BunnyAPI
      */
     protected function constApiKeySet()
     {
-        if (!defined("BunnyAPI::API_KEY") || empty(BunnyAPI::API_KEY)) {
+        if (!defined("self::API_KEY") || empty(self::API_KEY)) {
             return false;
         } else {
             return true;
@@ -134,7 +134,7 @@ class BunnyAPI
     private function APIcall(string $method, string $url, $params = false)
     {
 
-        if (is_null($this->api_key) && !$this->constApiKeySet()) {
+        if (!$this->constApiKeySet()) {
             throw new Exception("apiKey() is not set");
         }
         $curl = curl_init();
