@@ -1,5 +1,8 @@
 <?php
-require_once('bunnyAPI.php');//Class file
+require __DIR__ . '/vendor/autoload.php';
+
+use Corbpie\BunnyCdn\BunnyAPI;
+
 $bunny = new BunnyAPI();
 //Make sure API_KEY is set at line 10 bunnyAPI.php
 
