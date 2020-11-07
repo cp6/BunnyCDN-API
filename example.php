@@ -4,7 +4,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Corbpie\BunnyCdn\BunnyAPI;
 
 $bunny = new BunnyAPI();
-//Make sure API_KEY is set at line 10 bunnyAPI.php
+//Make sure API_KEY is set at line 12 bunnyAPI.php
 
 /*
  *
