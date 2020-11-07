@@ -1,5 +1,7 @@
 <?php
 
+namespace Corbpie\BunnyCdn;
+
 /**
  * Bunny CDN storage zone API class
  * @version  1.2
@@ -1139,7 +1141,7 @@ class BunnyAPI
             } else {
                 $enabled = 0;
             }
-            $insert = $db->prepare('INSERT INTO `storagezones` (`id`, `name`, `storage_used`, `enabled`, `files_stored`, `date_modified`) 
+            $insert = $db->prepare('INSERT INTO `storagezones` (`id`, `name`, `storage_used`, `enabled`, `files_stored`, `date_modified`)
                 VALUES (:id, :name, :storage_used, :enabled, :files_stored, :date_modified)
                 ON DUPLICATE KEY UPDATE `storage_used` = :storage_used, `enabled` = :enabled,`files_stored` = :files, `date_modified` = :date_modified');
             $insert->execute([
