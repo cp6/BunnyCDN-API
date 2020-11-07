@@ -56,20 +56,27 @@ If you want to interact with storage zones you will need your BunnyCDN API key s
 * Calculate costs
 
 ## Usage
-Usage is simple, make sure the class file is included
-```php
-require_once('bunnyAPI.php');
-```
+Usage is simple, install with:
 
+```
+composer require corbpie/bunny-cdn-api
+```
+Use like:
 ```php
+require __DIR__ . '/vendor/autoload.php';
+
+use Corbpie\BunnyCdn\BunnyAPI;
+
 $bunny = new bunnyAPI();//Initiate the class
+
+echo $bunny->listPullZones();
 ```
 
 #### Setting API key:
 
 **option 1 (preferred)**
 
-Line 10 ```bunnyAPI.php```
+Line 12 ```bunnyAPI.php```
 
 ```php
 const API_KEY = 'XXXX-XXXX-XXXX';
@@ -545,21 +552,5 @@ $bunny->insertPullZoneLogs($id, $date);
 
 ## TODO
 
-* Access more refined, individual data
+* Proper exception handling
 * Improve action logging
-
-## VERSIONS
-
-#### 1.1 
-
-* Fixed rename file function
-* Introduced MySQL functions (MySQL_database.sql)
-* Log actions
-* Store Pull and Storage zone basic data
-* Fixed Storage zone requests log documentation for date (dd-mm-yy -> mm-dd-yy)
-* Added formatted responses for most actions
-
-#### 1.0
-
-* Core actions
-* Basic FTP commands for Storage zone interaction
