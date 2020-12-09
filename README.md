@@ -46,6 +46,7 @@ If you want to interact with storage zones you will need your BunnyCDN API key s
 * View monthly charge breakdown
 * Apply coupon code
 * List pull zones
+* Get pull zone
 * Add pull zone
 * Update pull zone
 * Delete pull zone

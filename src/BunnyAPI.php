@@ -180,6 +180,16 @@ class BunnyAPI
     }
 
     /**
+     * Gets a single pull zone information
+     * @param int $id
+     * @return string
+     */
+    public function getPullZones(int $id)
+    {
+        return $this->APIcall('GET', "pullzone/$id");
+    }
+
+    /**
      * Creates pull zone
      * @param string $name
      * @param string $origin
