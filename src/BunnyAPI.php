@@ -184,7 +184,7 @@ class BunnyAPI
      * @param int $id
      * @return string
      */
-    public function getPullZones(int $id)
+    public function getPullZone(int $id)
     {
         return $this->APIcall('GET', "pullzone/$id");
     }
