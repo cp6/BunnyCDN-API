@@ -199,6 +199,17 @@ class BunnyAPI
     }
 
     /**
+     * Updates pull zone
+     * @param int $id
+     * @param array $args
+     * @return string
+     */
+    public function updatePullZone(int $id, array $args = array())
+    {
+        return $this->APIcall('POST', "pullzone/$id", json_encode($args));
+    }
+
+    /**
      * Returns pull zone information for id
      * @param int $id
      * @return string
