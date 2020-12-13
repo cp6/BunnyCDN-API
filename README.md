@@ -1,7 +1,7 @@
 # BunnyCDN API Class
 The most comprehensive, feature packed and easy to use PHP class for the BunnyCDN pull and storage zones [API](https://bunnycdn.docs.apiary.io/).
 
-This class whilst having a main focus on storage zone interaction includes pull zone features. 
+This class whilst having a main focus on storage zone interaction includes pull zone features.
 Combining API with FTP, managing and using BunnyCDN storage zones just got easier.
 
 
@@ -46,7 +46,9 @@ If you want to interact with storage zones you will need your BunnyCDN API key s
 * View monthly charge breakdown
 * Apply coupon code
 * List pull zones
+* Get pull zone
 * Add pull zone
+* Update pull zone
 * Delete pull zone
 * Purge pull zone
 * Add hostname to pull zone
