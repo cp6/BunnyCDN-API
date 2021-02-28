@@ -591,6 +591,34 @@ class BunnyAPI
     }
 
     /**
+     * Upload a file using HTTP PUT
+     * @param string $file File to upload E.g 'fluffy.mp4'
+     * @param string $save_as Save as when uploaded E.g 'pets/fluffy.mp4'
+     */
+    public function uploadFileHTTP(string $file, string $save_as = 'folder/filename.jpg')
+    {
+        $this->APIcall('PUT', $this->storage_name . "/" . $save_as, array('file' => $file), true);
+    }
+
+    /**
+     * Delete a file using HTTP DELETE
+     * @param string $file File name and path to delete E.g 'pets/fluffy.mp4'
+     */
+    public function deleteFileHTTP(string $file)
+    {
+        $this->APIcall('DELETE', $this->storage_name . "/" . $file, array(), true);
+    }
+
+    /**
+     * Download a file using HTTP GET
+     * @param string $file File name and path to download E.g 'pets/fluffy.mp4'
+     */
+    public function downloadFileHTTP(string $file)
+    {
+        $this->APIcall('GET', $this->storage_name . "/" . $file, array(), true);
+    }
+    
+    /**
      * Create a folder
      * @param string $name folder name to create
      * @param bool $db_log
