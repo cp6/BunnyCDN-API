@@ -131,8 +131,7 @@ class BunnyAPI
      * cURL execution with headers and parameters
      * @param string $method
      * @param string $url
-     * @param array $params
-     * @param bool $storage_call
+     * @param string|boolean $params
      * @return string
      * @throws Exception
      */
@@ -212,7 +211,7 @@ class BunnyAPI
             ),
             $args
         );
-        return $this->APIcall('POST', 'pullzone', json_encode($args));
+        return $this->APIcall('POST', 'pullzone', $args);
     }
 
     /**
@@ -223,7 +222,7 @@ class BunnyAPI
      */
     public function updatePullZone(int $id, array $args = array())
     {
-        return $this->APIcall('POST', "pullzone/$id", json_encode($args));
+        return $this->APIcall('POST', "pullzone/$id", $args);
     }
 
     /**
@@ -304,7 +303,7 @@ class BunnyAPI
         if ($db_log) {
             $this->actionsLog('ADD HN', $id, $hostname);
         }
-        return $this->APIcall('POST', 'pullzone/addHostname', json_encode(array("PullZoneId" => $id, "Hostname" => $hostname)));
+        return $this->APIcall('POST', 'pullzone/addHostname', array("PullZoneId" => $id, "Hostname" => $hostname));
     }
 
     /**
@@ -319,7 +318,7 @@ class BunnyAPI
         if ($db_log) {
             $this->actionsLog('REMOVE HN', $id, $hostname);
         }
-        return $this->APIcall('DELETE', 'pullzone/deleteHostname', json_encode(array("id" => $id, "hostname" => $hostname)));
+        return $this->APIcall('DELETE', 'pullzone/deleteHostname', array("id" => $id, "hostname" => $hostname));
     }
 
     /**
@@ -341,7 +340,7 @@ class BunnyAPI
      */
     public function forceSSLPullZone(int $id, string $hostname, bool $force_ssl = true)
     {
-        return $this->APIcall('POST', 'pullzone/setForceSSL', json_encode(array("PullZoneId" => $id, "Hostname" => $hostname, 'ForceSSL' => $force_ssl)));
+        return $this->APIcall('POST', 'pullzone/setForceSSL', array("PullZoneId" => $id, "Hostname" => $hostname, 'ForceSSL' => $force_ssl));
     }
 
     /**
@@ -379,7 +378,7 @@ class BunnyAPI
         if ($db_log) {
             $this->actionsLog('ADD BLOCKED IP', $id, $ip);
         }
-        return $this->APIcall('POST', 'pullzone/addBlockedIp', json_encode(array("PullZoneId" => $id, "BlockedIp" => $ip)));
+        return $this->APIcall('POST', 'pullzone/addBlockedIp', array("PullZoneId" => $id, "BlockedIp" => $ip));
     }
 
     /**
@@ -394,7 +393,7 @@ class BunnyAPI
         if ($db_log) {
             $this->actionsLog('UN BLOCKED IP', $id, $ip);
         }
-        return $this->APIcall('POST', 'pullzone/removeBlockedIp', json_encode(array("PullZoneId" => $id, "BlockedIp" => $ip)));
+        return $this->APIcall('POST', 'pullzone/removeBlockedIp', array("PullZoneId" => $id, "BlockedIp" => $ip));
     }
 
     /**
@@ -459,7 +458,7 @@ class BunnyAPI
         if ($db_log) {
             $this->actionsLog('ADD SZ', $name);
         }
-        return $this->APIcall('POST', 'storagezone', json_encode(array("Name" => $name)));
+        return $this->APIcall('POST', 'storagezone', array("Name" => $name));
     }
 
     /**
@@ -483,7 +482,7 @@ class BunnyAPI
      */
     public function purgeCache(string $url)
     {
-        return $this->APIcall('POST', 'purge', json_encode(array("url" => $url)));
+        return $this->APIcall('POST', 'purge', array("url" => $url));
     }
 
     /**
@@ -587,7 +586,7 @@ class BunnyAPI
      */
     public function applyCoupon(string $code)
     {
-        return $this->APIcall('POST', 'applycode', json_encode(array("couponCode" => $code)));
+        return $this->APIcall('POST', 'applycode', array("couponCode" => $code));
     }
 
     /**
@@ -617,7 +616,7 @@ class BunnyAPI
     {
         $this->APIcall('GET', $this->storage_name . "/" . $file, array(), true);
     }
-    
+
     /**
      * Create a folder
      * @param string $name folder name to create
@@ -1243,7 +1242,7 @@ class BunnyAPI
     public function actionsLog(string $task, string $file, string $file_other = NULL)
     {
         $db = $this->db_connect();
-        $insert = $db->prepare('INSERT INTO `actions` (`task`, `zone_name`, `file`, `file_other`) VALUES (?, ?, ?, ?)');
+        $insert = $db->prepare('INSERT IGNORE INTO `actions` (`task`, `zone_name`, `file`, `file_other`) VALUES (?, ?, ?, ?)');
         $insert->execute([$task, $this->storage_name, $file, $file_other]);
     }
 
