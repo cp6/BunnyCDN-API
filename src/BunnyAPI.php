@@ -11,7 +11,7 @@ class BunnyAPI
 {
     const API_KEY = 'XXXX-XXXX-XXXX';//BunnyCDN API key
     const API_URL = 'https://bunnycdn.com/api/';//URL for BunnyCDN API
-    const STORAGE_API_URL = 'https://storage.bunnycdn.com/';//URL for storage based API
+    const STORAGE_API_URL = 'https://storage.bunnycdn.com/';//URL for storage zone replication region (LA|NY|SG|SYD) Falkenstein is as default
     const HOSTNAME = 'storage.bunnycdn.com';//FTP hostname
     private string $api_key;
     private string $access_key;
