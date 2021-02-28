@@ -131,44 +131,47 @@ class BunnyAPI
      * cURL execution with headers and parameters
      * @param string $method
      * @param string $url
-     * @param string|boolean $params
+     * @param array $params
+     * @param bool $storage_call
      * @return string
      * @throws Exception
      */
-    private function APIcall(string $method, string $url, $params = false)
+    private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false)
     {
-
         if (!$this->constApiKeySet()) {
             throw new Exception("apiKey() is not set");
         }
         $curl = curl_init();
-        switch ($method) {
-            case "POST":
-                curl_setopt($curl, CURLOPT_POST, 1);
-                if ($params)
-                    curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
-                break;
-            case "PUT":
-                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
-                if ($params)
-                    curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
-                break;
-            case "DELETE":
-                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-                if ($params)
-                    curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
-                break;
-            default:
-                if ($params)
-                    $url = sprintf("%s?%s", $url, http_build_query($params));
+        if ($method == "POST") {
+            curl_setopt($curl, CURLOPT_POST, 1);
+            if (!empty($params))
+                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
+        } elseif ($method == "PUT") {
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+            curl_setopt($curl, CURLOPT_POST, 1);
+            curl_setopt($curl, CURLOPT_UPLOAD, 1);
+            $params = json_decode(json_encode($params));
+            curl_setopt($curl, CURLOPT_INFILE, fopen($params->file, "r"));
+            curl_setopt($curl, CURLOPT_INFILESIZE, filesize($params->file));
+        } elseif ($method == "DELETE") {
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+            if (!empty($params))
+                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
+        } else {//GET
+            if (!empty($params))
+                $url = sprintf("%s?%s", $url, http_build_query(json_encode($params)));
         }
-        curl_setopt($curl, CURLOPT_URL, "" . (BunnyAPI::API_URL) . "$url");
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/json",
-            "AccessKey: {$this->api_key}"));
+        if (!$storage_call) {//General CDN pullzone
+            curl_setopt($curl, CURLOPT_URL, BunnyAPI::API_URL . "$url");
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "AccessKey: $this->api_key"));
+        } else {//Storage zone
+            curl_setopt($curl, CURLOPT_URL, BunnyAPI::STORAGE_API_URL . "$url");
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: $this->access_key"));
+        }
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 0);
         $result = curl_exec($curl);
+        $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
         $this->data = $result;
         return $result;
