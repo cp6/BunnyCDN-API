@@ -9,12 +9,12 @@ namespace Corbpie\BunnyCdn;
  */
 class BunnyAPI
 {
-    const API_KEY = 'XXXX-XXXX-XXXX';//BunnyCDN API key
-    const API_URL = 'https://bunnycdn.com/api/';//URL for BunnyCDN API
-    const STORAGE_API_URL = 'https://storage.bunnycdn.com/';//URL for storage zone replication region (LA|NY|SG|SYD) Falkenstein is as default
-    const VIDEO_STREAM_URL = 'http://video.bunnycdn.com/';//URL for Bunny video stream API
-    const HOSTNAME = 'storage.bunnycdn.com';//FTP hostname
-    const STREAM_LIBRARY_ACCESS_KEY = 'XXXX-XXXX-XXXX';
+    private const API_KEY = 'XXXX-XXXX-XXXX';//BunnyCDN API key
+    private const API_URL = 'https://bunnycdn.com/api/';//URL for BunnyCDN API
+    private const STORAGE_API_URL = 'https://storage.bunnycdn.com/';//URL for storage zone replication region (LA|NY|SG|SYD) Falkenstein is as default
+    private const VIDEO_STREAM_URL = 'http://video.bunnycdn.com/';//URL for Bunny video stream API
+    private const HOSTNAME = 'storage.bunnycdn.com';//FTP hostname
+    private const STREAM_LIBRARY_ACCESS_KEY = 'XXXX-XXXX-XXXX';
     private string $api_key;
     private string $access_key;
     private string $storage_name;
@@ -27,7 +27,7 @@ class BunnyAPI
     public function __construct(int $execution_time = 240, bool $json_header = false)
     {
         if ($this->constApiKeySet()) {
-            $this->api_key = BunnyAPI::API_KEY;
+            $this->api_key = self::API_KEY;
         }
         ini_set('max_execution_time', $execution_time);
         if ($json_header) {
@@ -37,7 +37,7 @@ class BunnyAPI
 
     public function apiKey(string $api_key = ''): string
     {
-        if (!isset($api_key) or trim($api_key) == '') {
+        if (!isset($api_key) || trim($api_key) === '') {
             throw new Exception("You must provide an API key");
         }
         $this->api_key = $api_key;
@@ -47,19 +47,15 @@ class BunnyAPI
     public function zoneConnect(string $storage_name, string $access_key = ''): ?string
     {
         $this->storage_name = $storage_name;
-        if (empty($access_key)) {
-            $this->findStorageZoneAccessKey($storage_name);
-        } else {
-            $this->access_key = $access_key;
-        }
-        $conn_id = ftp_connect((BunnyAPI::HOSTNAME));
+        (empty($access_key)) ? $this->findStorageZoneAccessKey($storage_name) : $this->access_key = $access_key;
+        $conn_id = ftp_connect((self::HOSTNAME));
         $login = ftp_login($conn_id, $storage_name, $this->access_key);
         ftp_pasv($conn_id, true);
         if ($conn_id) {
             $this->connection = $conn_id;
             return json_encode(array('response' => 'success', 'action' => 'zoneConnect'));
         } else {
-            throw new Exception("Could not make FTP connection to " . (BunnyAPI::HOSTNAME) . "");
+            throw new Exception("Could not make FTP connection to " . (self::HOSTNAME) . "");
         }
     }
 
@@ -67,7 +63,7 @@ class BunnyAPI
     {
         $data = json_decode($this->listStorageZones(), true);
         foreach ($data as $zone) {
-            if ($zone['Name'] == $storage_name) {
+            if ($zone['Name'] === $storage_name) {
                 $this->access_key = $zone['Password'];
                 return true;//Found access key
             }
@@ -79,9 +75,8 @@ class BunnyAPI
     {
         if (!defined("self::API_KEY") || empty(self::API_KEY)) {
             return false;
-        } else {
-            return true;
         }
+        return true;
     }
 
     private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false, bool $video_stream_call = false): string
@@ -90,18 +85,18 @@ class BunnyAPI
             throw new Exception("apiKey() is not set");
         }
         $curl = curl_init();
-        if ($method == "POST") {
+        if ($method === "POST") {
             curl_setopt($curl, CURLOPT_POST, 1);
             if (!empty($params))
                 curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
-        } elseif ($method == "PUT") {
+        } elseif ($method === "PUT") {
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_UPLOAD, 1);
             $params = json_decode(json_encode($params));
             curl_setopt($curl, CURLOPT_INFILE, fopen($params->file, "r"));
             curl_setopt($curl, CURLOPT_INFILESIZE, filesize($params->file));
-        } elseif ($method == "DELETE") {
+        } elseif ($method === "DELETE") {
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
             if (!empty($params))
                 curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
@@ -110,13 +105,13 @@ class BunnyAPI
                 $url = sprintf("%s?%s", $url, http_build_query(json_encode($params)));
         }
         if (!$storage_call && !$video_stream_call) {//General CDN pullzone
-            curl_setopt($curl, CURLOPT_URL, BunnyAPI::API_URL . "$url");
+            curl_setopt($curl, CURLOPT_URL, self::API_URL . "$url");
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "AccessKey: $this->api_key"));
         } elseif ($video_stream_call) {//Video stream
-            curl_setopt($curl, CURLOPT_URL, BunnyAPI::VIDEO_STREAM_URL . "$url");
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: " . BunnyAPI::STREAM_LIBRARY_ACCESS_KEY . ""));
+            curl_setopt($curl, CURLOPT_URL, self::VIDEO_STREAM_URL . "$url");
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: " . self::STREAM_LIBRARY_ACCESS_KEY . ""));
         } else {//Storage zone
-            curl_setopt($curl, CURLOPT_URL, BunnyAPI::STORAGE_API_URL . "$url");
+            curl_setopt($curl, CURLOPT_URL, self::STORAGE_API_URL . "$url");
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: $this->access_key"));
         }
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
@@ -270,7 +265,7 @@ class BunnyAPI
                     'zone_id' => intval($log_format[4]),
                     'country_code' => $log_format[11]
                 );
-                array_push($line, $details);
+                $line[] = $details;
             }
         }
         return $line;
@@ -296,22 +291,21 @@ class BunnyAPI
         return $this->APIcall('POST', 'purge', array("url" => $url));
     }
 
-    public function convertBytes(int $bytes, string $convert_to = 'GB', bool $format = true, int $decimals = 2)
+    public function convertBytes(int $bytes, string $convert_to = 'GB', bool $format = true, int $decimals = 2): float|int|string
     {
-        if ($convert_to == 'GB') {
+        if ($convert_to === 'GB') {
             $value = ($bytes / 1073741824);
-        } elseif ($convert_to == 'MB') {
+        } elseif ($convert_to === 'MB') {
             $value = ($bytes / 1048576);
-        } elseif ($convert_to == 'KB') {
+        } elseif ($convert_to === 'KB') {
             $value = ($bytes / 1024);
         } else {
             $value = $bytes;
         }
         if ($format) {
             return number_format($value, $decimals);
-        } else {
-            return $value;
         }
+        return $value;
     }
 
     public function getStatistics(): string
@@ -339,10 +333,10 @@ class BunnyAPI
         $data = json_decode($this->getBilling(), true);
         $tally = 0;
         foreach ($data['BillingRecords'] as $charge) {
-            $tally = ($tally + $charge['Amount']);
+            $tally += $charge['Amount'];
         }
         if ($format) {
-            return array('amount' => floatval(number_format($tally, $decimals)), 'since' => str_replace('T', ' ', $charge['Timestamp']));
+            return array('amount' => (float)number_format($tally, $decimals), 'since' => str_replace('T', ' ', $charge['Timestamp']));
         } else {
             return array('amount' => $tally, 'since' => str_replace('T', ' ', $charge['Timestamp']));
         }
@@ -413,10 +407,10 @@ class BunnyAPI
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
-        $url = (BunnyAPI::STORAGE_API_URL);
+        $url = (self::STORAGE_API_URL);
         $array = json_decode(file_get_contents("$url/$this->storage_name/" . $dir . "/?AccessKey=$this->access_key"), true);
         foreach ($array as $value) {
-            if ($value['IsDirectory'] == false) {
+            if ($value['IsDirectory'] === false) {
                 $file_name = $value['ObjectName'];
                 $full_name = "$dir/$file_name";
                 if (ftp_delete($this->connection, $full_name)) {
@@ -455,13 +449,13 @@ class BunnyAPI
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
-        $url = (BunnyAPI::STORAGE_API_URL);
+        $url = (self::STORAGE_API_URL);
         $array = json_decode(file_get_contents("$url/$this->storage_name" . $dir . "/?AccessKey=$this->access_key"), true);
         $size = 0;
         $files = 0;
         foreach ($array as $value) {
-            if ($value['IsDirectory'] == false) {
-                $size = ($size + $value['Length']);
+            if ($value['IsDirectory'] === false) {
+                $size += $value['Length'];
                 $files++;
             }
         }
@@ -545,14 +539,14 @@ class BunnyAPI
 
     public function downloadFileWithProgress(string $save_as, string $get_file, string $progress_file = 'DOWNLOAD_PERCENT.txt'): void
     {
-        $ftp_url = "ftp://$this->storage_name:$this->access_key@" . BunnyAPI::HOSTNAME . "/$this->storage_name/$get_file";
+        $ftp_url = "ftp://$this->storage_name:$this->access_key@" . self::HOSTNAME . "/$this->storage_name/$get_file";
         $size = filesize($ftp_url);
         $in = fopen($ftp_url, "rb") or die("Cannot open source file");
         $out = fopen($save_as, "wb");
         while (!feof($in)) {
             $buf = fread($in, 10240);
             fwrite($out, $buf);
-            $file_data = intval(ftell($out) / $size * 100);
+            $file_data = (int)(ftell($out) / $size * 100);
             file_put_contents($progress_file, $file_data);
         }
         fclose($out);
@@ -563,10 +557,10 @@ class BunnyAPI
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
-        $url = (BunnyAPI::STORAGE_API_URL);
+        $url = (self::STORAGE_API_URL);
         $array = json_decode(file_get_contents("$url/$this->storage_name" . $dir_dl_from . "/?AccessKey=$this->access_key"), true);
         foreach ($array as $value) {
-            if ($value['IsDirectory'] == false) {
+            if ($value['IsDirectory'] === false) {
                 $file_name = $value['ObjectName'];
                 if (ftp_get($this->connection, "" . $dl_into . "$file_name", $file_name, $mode)) {
                     echo json_encode(array('response' => 'success', 'action' => 'downloadAll'));
@@ -590,14 +584,14 @@ class BunnyAPI
 
     public function uploadFileWithProgress(string $upload, string $upload_as, string $progress_file = 'UPLOAD_PERCENT.txt'): void
     {
-        $ftp_url = "ftp://$this->storage_name:$this->access_key@" . BunnyAPI::HOSTNAME . "/$this->storage_name/$upload_as";
+        $ftp_url = "ftp://$this->storage_name:$this->access_key@" . self::HOSTNAME . "/$this->storage_name/$upload_as";
         $size = filesize($upload);
         $out = fopen($ftp_url, "wb");
         $in = fopen($upload, "rb");
         while (!feof($in)) {
             $buffer = fread($in, 10240);
             fwrite($out, $buffer);
-            $file_data = intval(ftell($in) / $size * 100);
+            $file_data = (int)(ftell($in) / $size * 100);
             file_put_contents($progress_file, $file_data);
         }
         fclose($in);
@@ -608,9 +602,8 @@ class BunnyAPI
     {
         if ($bool) {
             return 1;
-        } else {
-            return 0;
         }
+        return 0;
     }
 
     public function jsonHeader(): void
@@ -622,7 +615,7 @@ class BunnyAPI
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
-        $url = (BunnyAPI::STORAGE_API_URL);
+        $url = (self::STORAGE_API_URL);
         return file_get_contents("$url/$this->storage_name/?AccessKey=$this->access_key");
     }
 
@@ -630,11 +623,11 @@ class BunnyAPI
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
-        $url = (BunnyAPI::STORAGE_API_URL);
+        $url = (self::STORAGE_API_URL);
         $array = json_decode(file_get_contents("$url/$this->storage_name" . $location . "/?AccessKey=$this->access_key"), true);
         $items = array('storage_name' => "" . $this->storage_name, 'current_dir' => $location, 'data' => array());
         foreach ($array as $value) {
-            if ($value['IsDirectory'] == false) {
+            if ($value['IsDirectory'] === false) {
                 $created = date('Y-m-d H:i:s', strtotime($value['DateCreated']));
                 $last_changed = date('Y-m-d H:i:s', strtotime($value['LastChanged']));
                 if (isset(pathinfo($value['ObjectName'])['extension'])) {
@@ -643,7 +636,7 @@ class BunnyAPI
                     $file_type = null;
                 }
                 $file_name = $value['ObjectName'];
-                $size_kb = floatval(($value['Length'] / 1024));
+                $size_kb = (float)($value['Length'] / 1024);
                 $guid = $value['Guid'];
                 $items['data'][] = array('name' => $file_name, 'file_type' => $file_type, 'size' => $size_kb, 'created' => $created,
                     'last_changed' => $last_changed, 'guid' => $guid);
@@ -656,7 +649,7 @@ class BunnyAPI
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
-        $url = (BunnyAPI::STORAGE_API_URL);
+        $url = (self::STORAGE_API_URL);
         $array = json_decode(file_get_contents("$url/$this->storage_name" . $location . "/?AccessKey=$this->access_key"), true);
         $items = array('storage_name' => $this->storage_name, 'current_dir' => $location, 'data' => array());
         foreach ($array as $value) {
@@ -664,7 +657,7 @@ class BunnyAPI
             $last_changed = date('Y-m-d H:i:s', strtotime($value['LastChanged']));
             $foldername = $value['ObjectName'];
             $guid = $value['Guid'];
-            if ($value['IsDirectory'] == true) {
+            if ($value['IsDirectory'] === true) {
                 $items['data'][] = array('name' => $foldername, 'created' => $created,
                     'last_changed' => $last_changed, 'guid' => $guid);
             }
@@ -676,7 +669,7 @@ class BunnyAPI
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
-        $url = (BunnyAPI::STORAGE_API_URL);
+        $url = (self::STORAGE_API_URL);
         $array = json_decode(file_get_contents("$url/$this->storage_name" . $location . "/?AccessKey=$this->access_key"), true);
         $items = array('storage_name' => "" . $this->storage_name, 'current_dir' => $location, 'data' => array());
         foreach ($array as $value) {
@@ -684,7 +677,7 @@ class BunnyAPI
             $last_changed = date('Y-m-d H:i:s', strtotime($value['LastChanged']));
             $file_name = $value['ObjectName'];
             $guid = $value['Guid'];
-            if ($value['IsDirectory'] == true) {
+            if ($value['IsDirectory'] === true) {
                 $file_type = null;
                 $size_kb = null;
             } else {
@@ -693,7 +686,7 @@ class BunnyAPI
                 } else {
                     $file_type = null;
                 }
-                $size_kb = floatval(($value['Length'] / 1024));
+                $size_kb = (float)($value['Length'] / 1024);
             }
             $items['data'][] = array('name' => $file_name, 'file_type' => $file_type, 'size' => $size_kb, 'is_dir' => $value['IsDirectory'], 'created' => $created,
                 'last_changed' => $last_changed, 'guid' => $guid);
@@ -706,7 +699,7 @@ class BunnyAPI
         if (ftp_close($this->connection)) {
             return json_encode(array('response' => 'success', 'action' => 'closeConnection'));
         } else {
-            throw new Exception("Error closing connection to " . (BunnyAPI::HOSTNAME) . "");
+            throw new Exception("Error closing connection to " . (self::HOSTNAME) . "");
         }
     }
 
@@ -720,8 +713,8 @@ class BunnyAPI
         $s1pb = '0.004';
         $s2pb = '0.003';
         $s2pb_plus = '0.0025';
-        $gigabytes = floatval(($bytes / 1073741824));
-        $terabytes = floatval(($gigabytes / 1024));
+        $gigabytes = (float)($bytes / 1073741824);
+        $terabytes = (float)($gigabytes / 1024);
         return array(
             'bytes' => $bytes,
             'gigabytes' => $gigabytes,
