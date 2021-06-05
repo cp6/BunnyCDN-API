@@ -4,7 +4,7 @@ namespace Corbpie\BunnyCdn;
 
 /**
  * Bunny CDN pull & storage zone API class
- * @version  1.3
+ * @version  1.4
  * @author corbpie
  */
 class BunnyAPI
@@ -730,8 +730,11 @@ class BunnyAPI
         );
     }
 
-    /*Bunny net video stream section */
-
+    /*
+     * Bunny net video stream section
+     *
+    */
+    //Library -> collection -> video
     public function setStreamLibraryId(int $library_id): void
     {
         $this->stream_library_id = $library_id;
@@ -745,6 +748,11 @@ class BunnyAPI
     public function setStreamVideoGuid(string $video_guid): void
     {
         $this->stream_video_guid = $video_guid;
+    }
+
+    public function getVideoCollections(): string
+    {
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/collections", [], false, true);
     }
 
     public function getStreamCollections(int $library_id = 0, int $page = 1, int $items_pp = 100, string $order_by = 'date'): string
@@ -794,16 +802,9 @@ class BunnyAPI
         return $this->APIcall('GET', "library/$library_id/videos/$video_guid", [], false, true);
     }
 
-    public function updateVideo(int $library_id, string $video_guid, string $video_library_guid, string $datetime_uploaded,
-                                int $views, bool $is_public, int $length, int $status, float $framerate, int $width,
-                                int $height, int $thumb_count, int $encode_progress, int $size, bool $has_mp4_fallback): void
+    public function deleteVideo(int $library_id, string $video_guid): ?string
     {
-        //TODO
-    }
-
-    public function deleteVideo(int $library_id, string $video_guid): void
-    {
-
+        return $this->APIcall('DELETE', "library/$library_id/videos/$video_guid", [], false, true);
     }
 
     public function createVideo(int $library_id, string $video_title, string $collection_guid = ''): ?string
