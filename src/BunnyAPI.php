@@ -12,12 +12,17 @@ class BunnyAPI
     const API_KEY = 'XXXX-XXXX-XXXX';//BunnyCDN API key
     const API_URL = 'https://bunnycdn.com/api/';//URL for BunnyCDN API
     const STORAGE_API_URL = 'https://storage.bunnycdn.com/';//URL for storage zone replication region (LA|NY|SG|SYD) Falkenstein is as default
+    const VIDEO_STREAM_URL = 'http://video.bunnycdn.com/';//URL for Bunny video stream API
     const HOSTNAME = 'storage.bunnycdn.com';//FTP hostname
+    const STREAM_LIBRARY_ACCESS_KEY = 'XXXX-XXXX-XXXX';
     private string $api_key;
     private string $access_key;
     private string $storage_name;
     private $connection;
     private string $data;
+    private int $stream_library_id;
+    private string $stream_collection_guid = '';
+    private string $stream_video_guid = '';
 
     /**
      * Option to display notices and errors for debugging and execution time amount
@@ -135,7 +140,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false)
+    private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false, bool $video_stream_call = false)
     {
         if (!$this->constApiKeySet()) {
             throw new Exception("apiKey() is not set");
@@ -160,9 +165,12 @@ class BunnyAPI
             if (!empty($params))
                 $url = sprintf("%s?%s", $url, http_build_query(json_encode($params)));
         }
-        if (!$storage_call) {//General CDN pullzone
+        if (!$storage_call && !$video_stream_call) {//General CDN pullzone
             curl_setopt($curl, CURLOPT_URL, BunnyAPI::API_URL . "$url");
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "AccessKey: $this->api_key"));
+        } elseif ($video_stream_call) {//Video stream
+            curl_setopt($curl, CURLOPT_URL, BunnyAPI::VIDEO_STREAM_URL . "$url");
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: " . BunnyAPI::STREAM_LIBRARY_ACCESS_KEY . ""));
         } else {//Storage zone
             curl_setopt($curl, CURLOPT_URL, BunnyAPI::STORAGE_API_URL . "$url");
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: $this->access_key"));
@@ -1101,7 +1109,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    function listAll(string $location = '')
+    public function listAll(string $location = '')
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -1276,6 +1284,112 @@ class BunnyAPI
             'storage_1PB_2PB' => sprintf('%f', ($s2pb * $terabytes)),
             'storage_2PB_PLUS' => sprintf('%f', ($s2pb_plus * $terabytes))
         );
+    }
+
+    /*Bunny net video stream section */
+
+    public function setStreamLibraryId(int $library_id)
+    {
+        $this->stream_library_id = $library_id;
+    }
+
+    public function setStreamCollectionGuid(string $collection_guid)
+    {
+        $this->stream_collection_guid = $collection_guid;
+    }
+
+    public function setStreamVideoGuid(string $video_guid)
+    {
+        $this->stream_video_guid = $video_guid;
+    }
+
+    public function getStreamCollections(int $library_id = 0, int $page = 1, int $items_pp = 100, string $order_by = 'date')
+    {
+        if ($library_id === 0) {
+            $library_id = $this->stream_library_id;
+        }
+        return $this->APIcall('GET', "library/$library_id/collections?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
+    }
+
+    public function getStreamForCollection(int $library_id = 0, string $collection_guid = '')
+    {
+        if ($library_id === 0) {
+            $library_id = $this->stream_library_id;
+        }
+        if (empty($collection_guid)) {
+            $collection_guid = $this->stream_collection_guid;
+        }
+        return $this->APIcall('GET', "library/$library_id/collections/$collection_guid", [], false, true);
+    }
+
+    public function updateCollection(int $library_id, string $collection_guid, string $video_library_id, int $video_count, int $total_size)
+    {
+        return $this->APIcall('POST', "library/$library_id/collections/$collection_guid", array("videoLibraryId" => $video_library_id, "videoCount" => $video_count, "totalSize" => $total_size), false, true);
+    }
+
+    public function deleteCollection(int $library_id, string $collection_id)
+    {
+        return $this->APIcall('DELETE', "library/$library_id/collections/$collection_id", [], false, true);
+    }
+
+    public function createCollection(int $library_id, string $video_library_id, int $video_count, int $total_size)
+    {
+        return $this->APIcall('POST', "library/$library_id/collections", array("videoLibraryId" => $video_library_id, "videoCount" => $video_count, "totalSize" => $total_size), false, true);
+    }
+
+    public function listVideos(int $page = 1, int $items_pp = 100, string $order_by = 'date')
+    {
+        if (!isset($this->stream_library_id)) {
+            throw new Exception("You must set library id with: setStreamLibraryId()");
+        }
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
+    }
+
+    public function getVideo(int $library_id, string $video_guid)
+    {
+        return $this->APIcall('GET', "library/$library_id/videos/$video_guid", [], false, true);
+    }
+
+    public function updateVideo(int $library_id, string $video_guid, string $video_library_guid, string $datetime_uploaded,
+                                int $views, bool $is_public, int $length, int $status, float $framerate, int $width,
+                                int $height, int $thumb_count, int $encode_progress, int $size, bool $has_mp4_fallback)
+    {
+        //TODO
+    }
+
+    public function deleteVideo(int $library_id, string $video_guid)
+    {
+
+    }
+
+    public function createVideo(int $library_id, string $video_title, string $collection_guid = '')
+    {
+        if (!empty($collection_guid)) {
+            return $this->APIcall('POST', "library/$library_id/videos?title=$video_title&collectionId=$collection_guid", [], false, true);
+        } else {
+            return $this->APIcall('POST', "library/$library_id/videos?title=$video_title", [], false, true);
+        }
+    }
+
+    public function uploadVideo(int $library_id, string $video_guid, string $video_to_upload)
+    {
+        //Need to use createVideo() first to get video guid
+        return $this->APIcall('PUT', "library/$library_id/videos/$video_guid", array('file' => $video_to_upload), false, true);
+    }
+
+    public function setThumbnail(int $library_id, string $video_guid, string $thumbnail_url)
+    {
+        return $this->APIcall('POST', "library/$library_id/videos/$video_guid/thumbnail?$thumbnail_url", [], false, true);
+    }
+
+    public function addCaptions(int $library_id, string $video_guid, string $srclang, string $label, string $captions_file)
+    {
+        return $this->APIcall('POST', "library/$library_id/videos/$video_guid/captions/$srclang?label=$label&captionsFile=$captions_file", [], false, true);
+    }
+
+    public function deleteCaptions(int $library_id, string $video_guid, string $srclang)
+    {
+        return $this->APIcall('DELETE', "library/$library_id/videos/$video_guid/captions/$srclang", [], false, true);
     }
 
 }
