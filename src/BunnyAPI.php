@@ -26,21 +26,15 @@ class BunnyAPI
 
     /**
      * Option to display notices and errors for debugging and execution time amount
-     * @param bool $show_errors
      * @param int $execution_time
      * @param bool $json_header
      */
-    public function __construct(bool $show_errors = false, int $execution_time = 240, bool $json_header = false)
+    public function __construct(int $execution_time = 240, bool $json_header = false)
     {
         if ($this->constApiKeySet()) {
             $this->api_key = BunnyAPI::API_KEY;
         }
         ini_set('max_execution_time', $execution_time);
-        if ($show_errors) {
-            ini_set('display_errors', 1);
-            ini_set('display_startup_errors', 1);
-            error_reporting(E_ALL);
-        }
         if ($json_header) {
             header('Content-Type: application/json');
         }
