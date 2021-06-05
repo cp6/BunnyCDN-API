@@ -46,7 +46,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function apiKey(string $api_key = '')
+    public function apiKey(string $api_key = ''): string
     {
         if (!isset($api_key) or trim($api_key) == '') {
             throw new Exception("You must provide an API key");
@@ -62,7 +62,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function zoneConnect(string $storage_name, string $access_key = '')
+    public function zoneConnect(string $storage_name, string $access_key = ''): ?string
     {
         $this->storage_name = $storage_name;
         if (empty($access_key)) {
@@ -86,7 +86,7 @@ class BunnyAPI
      * @param string $storage_name
      * @return bool
      */
-    protected function findStorageZoneAccessKey(string $storage_name)
+    protected function findStorageZoneAccessKey(string $storage_name): bool
     {
         $data = json_decode($this->listStorageZones(), true);
         foreach ($data as $zone) {
@@ -102,7 +102,7 @@ class BunnyAPI
      * Checks if API key has been hard coded with the constant API_KEY
      * @return bool
      */
-    protected function constApiKeySet()
+    protected function constApiKeySet(): ?bool
     {
         if (!defined("self::API_KEY") || empty(self::API_KEY)) {
             return false;
@@ -119,7 +119,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false, bool $video_stream_call = false)
+    private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false, bool $video_stream_call = false): string
     {
         if (!$this->constApiKeySet()) {
             throw new Exception("apiKey() is not set");
@@ -167,7 +167,7 @@ class BunnyAPI
      * Returns all pull zones and information
      * @return string
      */
-    public function listPullZones()
+    public function listPullZones(): string
     {
         return $this->APIcall('GET', 'pullzone');
     }
@@ -177,7 +177,7 @@ class BunnyAPI
      * @param int $id
      * @return string
      */
-    public function getPullZone(int $id)
+    public function getPullZone(int $id): string
     {
         return $this->APIcall('GET', "pullzone/$id");
     }
@@ -189,7 +189,7 @@ class BunnyAPI
      * @param array $args
      * @return string
      */
-    public function createPullZone(string $name, string $origin, array $args = array())
+    public function createPullZone(string $name, string $origin, array $args = array()): string
     {
         $args = array_merge(
             array(
@@ -207,7 +207,7 @@ class BunnyAPI
      * @param array $args
      * @return string
      */
-    public function updatePullZone(int $id, array $args = array())
+    public function updatePullZone(int $id, array $args = array()): string
     {
         return $this->APIcall('POST', "pullzone/$id", $args);
     }
@@ -218,7 +218,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function pullZoneData(int $id)
+    public function pullZoneData(int $id): string
     {
         return $this->APIcall('GET', "pullzone/$id");
     }
@@ -228,7 +228,7 @@ class BunnyAPI
      * @param int $id
      * @return string
      */
-    public function purgePullZone(int $id)
+    public function purgePullZone(int $id): string
     {
         return $this->APIcall('POST', "pullzone/$id/purgeCache");
     }
@@ -238,7 +238,7 @@ class BunnyAPI
      * @param int $id
      * @return string
      */
-    public function deletePullZone(int $id)
+    public function deletePullZone(int $id): string
     {
         return $this->APIcall('DELETE', "pullzone/$id");
     }
@@ -248,7 +248,7 @@ class BunnyAPI
      * @param int $id
      * @return array
      */
-    public function pullZoneHostnames(int $id)
+    public function pullZoneHostnames(int $id): ?array
     {
         $data = json_decode($this->pullZoneData($id), true);
         if (isset($data['Hostnames'])) {
@@ -276,7 +276,7 @@ class BunnyAPI
      * @param string $hostname
      * @return string
      */
-    public function addHostnamePullZone(int $id, string $hostname)
+    public function addHostnamePullZone(int $id, string $hostname): string
     {
         return $this->APIcall('POST', 'pullzone/addHostname', array("PullZoneId" => $id, "Hostname" => $hostname));
     }
@@ -287,7 +287,7 @@ class BunnyAPI
      * @param string $hostname
      * @return string
      */
-    public function removeHostnamePullZone(int $id, string $hostname)
+    public function removeHostnamePullZone(int $id, string $hostname): string
     {
         return $this->APIcall('DELETE', 'pullzone/deleteHostname', array("id" => $id, "hostname" => $hostname));
     }
@@ -297,7 +297,7 @@ class BunnyAPI
      * @param string $hostname
      * @return string
      */
-    public function addFreeSSLCertificate(string $hostname)
+    public function addFreeSSLCertificate(string $hostname): string
     {
         return $this->APIcall('GET', 'pullzone/loadFreeCertificate?hostname=' . $hostname);
     }
@@ -309,7 +309,7 @@ class BunnyAPI
      * @param boolean $force_ssl
      * @return string
      */
-    public function forceSSLPullZone(int $id, string $hostname, bool $force_ssl = true)
+    public function forceSSLPullZone(int $id, string $hostname, bool $force_ssl = true): string
     {
         return $this->APIcall('POST', 'pullzone/setForceSSL', array("PullZoneId" => $id, "Hostname" => $hostname, 'ForceSSL' => $force_ssl));
     }
@@ -319,7 +319,7 @@ class BunnyAPI
      * @param int $id
      * @return array
      */
-    public function listBlockedIpPullZone(int $id)
+    public function listBlockedIpPullZone(int $id): ?array
     {
         $data = json_decode($this->pullZoneData($id), true);
         if (isset($data['BlockedIps'])) {
@@ -343,7 +343,7 @@ class BunnyAPI
      * @param string $ip
      * @return string
      */
-    public function addBlockedIpPullZone(int $id, string $ip)
+    public function addBlockedIpPullZone(int $id, string $ip): string
     {
         return $this->APIcall('POST', 'pullzone/addBlockedIp', array("PullZoneId" => $id, "BlockedIp" => $ip));
     }
@@ -354,7 +354,7 @@ class BunnyAPI
      * @param string $ip
      * @return string
      */
-    public function unBlockedIpPullZone(int $id, string $ip)
+    public function unBlockedIpPullZone(int $id, string $ip): string
     {
         return $this->APIcall('POST', 'pullzone/removeBlockedIp', array("PullZoneId" => $id, "BlockedIp" => $ip));
     }
@@ -365,7 +365,7 @@ class BunnyAPI
      * @param string $date Must be within past 3 days (mm-dd-yy)
      * @return array
      */
-    public function pullZoneLogs(int $id, string $date)
+    public function pullZoneLogs(int $id, string $date): array
     {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, "https://logging.bunnycdn.com/$date/$id.log");
@@ -405,7 +405,7 @@ class BunnyAPI
      * Returns all storage zones and information
      * @return string
      */
-    public function listStorageZones()
+    public function listStorageZones(): string
     {
         return $this->APIcall('GET', 'storagezone');
     }
@@ -415,7 +415,7 @@ class BunnyAPI
      * @param string $name
      * @return string
      */
-    public function addStorageZone(string $name)
+    public function addStorageZone(string $name): string
     {
         return $this->APIcall('POST', 'storagezone', array("Name" => $name));
     }
@@ -425,7 +425,7 @@ class BunnyAPI
      * @param int $id
      * @return string
      */
-    public function deleteStorageZone(int $id)
+    public function deleteStorageZone(int $id): string
     {
         return $this->APIcall('DELETE', "storagezone/$id");
     }
@@ -435,7 +435,7 @@ class BunnyAPI
      * @param $url
      * @return string
      */
-    public function purgeCache(string $url)
+    public function purgeCache(string $url): string
     {
         return $this->APIcall('POST', 'purge', array("url" => $url));
     }
@@ -470,7 +470,7 @@ class BunnyAPI
      * Get statistics
      * @return string
      */
-    public function getStatistics()
+    public function getStatistics(): string
     {
         return $this->APIcall('GET', 'statistics');
     }
@@ -479,7 +479,7 @@ class BunnyAPI
      * Get billing information
      * @return string
      */
-    public function getBilling()
+    public function getBilling(): string
     {
         return $this->APIcall('GET', 'billing');
     }
@@ -488,7 +488,7 @@ class BunnyAPI
      * Get current account balance
      * @return string
      */
-    public function balance()
+    public function balance(): string
     {
         return json_decode($this->getBilling(), true)['Balance'];
     }
@@ -497,7 +497,7 @@ class BunnyAPI
      * Gets current month charge amount
      * @return string
      */
-    public function monthCharges()
+    public function monthCharges(): string
     {
         return json_decode($this->getBilling(), true)['ThisMonthCharges'];
     }
@@ -508,7 +508,7 @@ class BunnyAPI
      * @param int $decimals
      * @return array
      */
-    public function totalBillingAmount(bool $format = false, int $decimals = 2)
+    public function totalBillingAmount(bool $format = false, int $decimals = 2): ?array
     {
         $data = json_decode($this->getBilling(), true);
         $tally = 0;
@@ -526,7 +526,7 @@ class BunnyAPI
      * Array for month charges per zone
      * @return array
      */
-    public function monthChargeBreakdown()
+    public function monthChargeBreakdown(): array
     {
         $ar = json_decode($this->getBilling(), true);
         return array('storage' => $ar['MonthlyChargesStorage'], 'EU' => $ar['MonthlyChargesEUTraffic'],
@@ -539,7 +539,7 @@ class BunnyAPI
      * @param string $code
      * @return string
      */
-    public function applyCoupon(string $code)
+    public function applyCoupon(string $code): string
     {
         return $this->APIcall('POST', 'applycode', array("couponCode" => $code));
     }
@@ -549,7 +549,7 @@ class BunnyAPI
      * @param string $file File to upload E.g 'fluffy.mp4'
      * @param string $save_as Save as when uploaded E.g 'pets/fluffy.mp4'
      */
-    public function uploadFileHTTP(string $file, string $save_as = 'folder/filename.jpg')
+    public function uploadFileHTTP(string $file, string $save_as = 'folder/filename.jpg'): void
     {
         $this->APIcall('PUT', $this->storage_name . "/" . $save_as, array('file' => $file), true);
     }
@@ -558,7 +558,7 @@ class BunnyAPI
      * Delete a file using HTTP DELETE
      * @param string $file File name and path to delete E.g 'pets/fluffy.mp4'
      */
-    public function deleteFileHTTP(string $file)
+    public function deleteFileHTTP(string $file): void
     {
         $this->APIcall('DELETE', $this->storage_name . "/" . $file, array(), true);
     }
@@ -567,7 +567,7 @@ class BunnyAPI
      * Download a file using HTTP GET
      * @param string $file File name and path to download E.g 'pets/fluffy.mp4'
      */
-    public function downloadFileHTTP(string $file)
+    public function downloadFileHTTP(string $file): void
     {
         $this->APIcall('GET', $this->storage_name . "/" . $file, array(), true);
     }
@@ -578,7 +578,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function createFolder(string $name)
+    public function createFolder(string $name): ?string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -595,7 +595,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function deleteFolder(string $name)
+    public function deleteFolder(string $name): ?string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -612,7 +612,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function deleteFile(string $name)
+    public function deleteFile(string $name): ?string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -629,7 +629,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function deleteAllFiles(string $dir)
+    public function deleteAllFiles(string $dir): ?string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -656,7 +656,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function uploadAllFiles(string $dir, string $place, $mode = FTP_BINARY)
+    public function uploadAllFiles(string $dir, string $place, $mode = FTP_BINARY): ?string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -678,7 +678,7 @@ class BunnyAPI
      * @return int
      * @throws Exception
      */
-    public function getFileSize(string $file)
+    public function getFileSize(string $file): int
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -691,7 +691,7 @@ class BunnyAPI
      * @return array
      * @throws Exception
      */
-    public function dirSize(string $dir = '')
+    public function dirSize(string $dir = ''): array
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -714,7 +714,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function currentDir()
+    public function currentDir(): string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -727,7 +727,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function changeDir(string $moveto)
+    public function changeDir(string $moveto): ?string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -743,7 +743,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function moveUpOne()
+    public function moveUpOne(): ?string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -763,7 +763,7 @@ class BunnyAPI
      * @param string $new_file_name new name for the file E.g 'young_fluffy.jpg'
      * @throws Exception
      */
-    public function renameFile(string $dir, string $file_name, string $new_file_name)
+    public function renameFile(string $dir, string $file_name, string $new_file_name): void
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -787,7 +787,7 @@ class BunnyAPI
      * @param string $move_to Directory to move file to E.g 'pets/puppy_fluffy/'
      * @throws Exception
      */
-    public function moveFile(string $dir, string $file_name, string $move_to)
+    public function moveFile(string $dir, string $file_name, string $move_to): void
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -812,7 +812,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function downloadFile(string $save_as, string $get_file, int $mode = FTP_BINARY)
+    public function downloadFile(string $save_as, string $get_file, int $mode = FTP_BINARY): ?string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -829,7 +829,7 @@ class BunnyAPI
      * @param string $get_file File to download E.g 'pets/fluffy/fluffy_trick_1.mp4'
      * @param string $progress_file File to write the download progress to
      */
-    public function downloadFileWithProgress(string $save_as, string $get_file, string $progress_file = 'DOWNLOAD_PERCENT.txt')
+    public function downloadFileWithProgress(string $save_as, string $get_file, string $progress_file = 'DOWNLOAD_PERCENT.txt'): void
     {
         $ftp_url = "ftp://$this->storage_name:$this->access_key@" . BunnyAPI::HOSTNAME . "/$this->storage_name/$get_file";
         $size = filesize($ftp_url);
@@ -853,7 +853,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function downloadAll(string $dir_dl_from = '', string $dl_into = '', int $mode = FTP_BINARY)
+    public function downloadAll(string $dir_dl_from = '', string $dl_into = '', int $mode = FTP_BINARY): ?string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -879,7 +879,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function uploadFile(string $upload, string $upload_as, int $mode = FTP_BINARY)
+    public function uploadFile(string $upload, string $upload_as, int $mode = FTP_BINARY): ?string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -896,7 +896,7 @@ class BunnyAPI
      * @param string $upload_as Save as when uploaded E.g 'pets/fluffy.mp4'
      * @param string $progress_file File to write the upload progress to
      */
-    public function uploadFileWithProgress(string $upload, string $upload_as, string $progress_file = 'UPLOAD_PERCENT.txt')
+    public function uploadFileWithProgress(string $upload, string $upload_as, string $progress_file = 'UPLOAD_PERCENT.txt'): void
     {
         $ftp_url = "ftp://$this->storage_name:$this->access_key@" . BunnyAPI::HOSTNAME . "/$this->storage_name/$upload_as";
         $size = filesize($upload);
@@ -917,7 +917,7 @@ class BunnyAPI
      * @param bool $bool
      * @return int
      */
-    public function boolToInt(bool $bool)
+    public function boolToInt(bool $bool): ?int
     {
         if ($bool) {
             return 1;
@@ -929,7 +929,7 @@ class BunnyAPI
     /**
      * Set Json type header (Pretty print JSON in Firefox)
      */
-    public function jsonHeader()
+    public function jsonHeader(): void
     {
         header('Content-Type: application/json');
     }
@@ -939,7 +939,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function listAllOG()
+    public function listAllOG(): string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -953,7 +953,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function listFiles(string $location = '')
+    public function listFiles(string $location = ''): string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -985,7 +985,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function listFolders(string $location = '')
+    public function listFolders(string $location = ''): string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -1011,7 +1011,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function listAll(string $location = '')
+    public function listAll(string $location = ''): string
     {
         if (is_null($this->connection))
             throw new Exception("zoneConnect() is not set");
@@ -1045,7 +1045,7 @@ class BunnyAPI
      * @return string
      * @throws Exception
      */
-    public function closeConnection()
+    public function closeConnection(): ?string
     {
         if (ftp_close($this->connection)) {
             return json_encode(array('response' => 'success', 'action' => 'closeConnection'));
@@ -1065,7 +1065,7 @@ class BunnyAPI
      * Inserts pull zones into `pullzones` database table
      * @return string
      */
-    public function insertPullZones()
+    public function insertPullZones(): string
     {
         $db = $this->db_connect();
         $data = json_decode($this->listPullZones(), true);
@@ -1096,7 +1096,7 @@ class BunnyAPI
      * Inserts storage zones into `storagezones` database table
      * @return string
      */
-    public function insertStorageZones()
+    public function insertStorageZones(): string
     {
         $db = $this->db_connect();
         $data = json_decode($this->listStorageZones(), true);
@@ -1127,7 +1127,7 @@ class BunnyAPI
      * @param string $date
      * @return string
      */
-    public function insertPullZoneLogs(int $id, string $date)
+    public function insertPullZoneLogs(int $id, string $date): string
     {
         $db = $this->db_connect();
         $data = $this->pullZoneLogs($id, $date);
@@ -1177,22 +1177,22 @@ class BunnyAPI
 
     /*Bunny net video stream section */
 
-    public function setStreamLibraryId(int $library_id)
+    public function setStreamLibraryId(int $library_id): void
     {
         $this->stream_library_id = $library_id;
     }
 
-    public function setStreamCollectionGuid(string $collection_guid)
+    public function setStreamCollectionGuid(string $collection_guid): void
     {
         $this->stream_collection_guid = $collection_guid;
     }
 
-    public function setStreamVideoGuid(string $video_guid)
+    public function setStreamVideoGuid(string $video_guid): void
     {
         $this->stream_video_guid = $video_guid;
     }
 
-    public function getStreamCollections(int $library_id = 0, int $page = 1, int $items_pp = 100, string $order_by = 'date')
+    public function getStreamCollections(int $library_id = 0, int $page = 1, int $items_pp = 100, string $order_by = 'date'): string
     {
         if ($library_id === 0) {
             $library_id = $this->stream_library_id;
@@ -1200,7 +1200,7 @@ class BunnyAPI
         return $this->APIcall('GET', "library/$library_id/collections?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
     }
 
-    public function getStreamForCollection(int $library_id = 0, string $collection_guid = '')
+    public function getStreamForCollection(int $library_id = 0, string $collection_guid = ''): string
     {
         if ($library_id === 0) {
             $library_id = $this->stream_library_id;
@@ -1211,22 +1211,22 @@ class BunnyAPI
         return $this->APIcall('GET', "library/$library_id/collections/$collection_guid", [], false, true);
     }
 
-    public function updateCollection(int $library_id, string $collection_guid, string $video_library_id, int $video_count, int $total_size)
+    public function updateCollection(int $library_id, string $collection_guid, string $video_library_id, int $video_count, int $total_size): string
     {
         return $this->APIcall('POST', "library/$library_id/collections/$collection_guid", array("videoLibraryId" => $video_library_id, "videoCount" => $video_count, "totalSize" => $total_size), false, true);
     }
 
-    public function deleteCollection(int $library_id, string $collection_id)
+    public function deleteCollection(int $library_id, string $collection_id): string
     {
         return $this->APIcall('DELETE', "library/$library_id/collections/$collection_id", [], false, true);
     }
 
-    public function createCollection(int $library_id, string $video_library_id, int $video_count, int $total_size)
+    public function createCollection(int $library_id, string $video_library_id, int $video_count, int $total_size): string
     {
         return $this->APIcall('POST', "library/$library_id/collections", array("videoLibraryId" => $video_library_id, "videoCount" => $video_count, "totalSize" => $total_size), false, true);
     }
 
-    public function listVideos(int $page = 1, int $items_pp = 100, string $order_by = 'date')
+    public function listVideos(int $page = 1, int $items_pp = 100, string $order_by = 'date'): string
     {
         if (!isset($this->stream_library_id)) {
             throw new Exception("You must set library id with: setStreamLibraryId()");
@@ -1234,24 +1234,24 @@ class BunnyAPI
         return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
     }
 
-    public function getVideo(int $library_id, string $video_guid)
+    public function getVideo(int $library_id, string $video_guid): string
     {
         return $this->APIcall('GET', "library/$library_id/videos/$video_guid", [], false, true);
     }
 
     public function updateVideo(int $library_id, string $video_guid, string $video_library_guid, string $datetime_uploaded,
                                 int $views, bool $is_public, int $length, int $status, float $framerate, int $width,
-                                int $height, int $thumb_count, int $encode_progress, int $size, bool $has_mp4_fallback)
+                                int $height, int $thumb_count, int $encode_progress, int $size, bool $has_mp4_fallback): void
     {
         //TODO
     }
 
-    public function deleteVideo(int $library_id, string $video_guid)
+    public function deleteVideo(int $library_id, string $video_guid): void
     {
 
     }
 
-    public function createVideo(int $library_id, string $video_title, string $collection_guid = '')
+    public function createVideo(int $library_id, string $video_title, string $collection_guid = ''): ?string
     {
         if (!empty($collection_guid)) {
             return $this->APIcall('POST', "library/$library_id/videos?title=$video_title&collectionId=$collection_guid", [], false, true);
@@ -1260,23 +1260,23 @@ class BunnyAPI
         }
     }
 
-    public function uploadVideo(int $library_id, string $video_guid, string $video_to_upload)
+    public function uploadVideo(int $library_id, string $video_guid, string $video_to_upload): string
     {
         //Need to use createVideo() first to get video guid
         return $this->APIcall('PUT', "library/$library_id/videos/$video_guid", array('file' => $video_to_upload), false, true);
     }
 
-    public function setThumbnail(int $library_id, string $video_guid, string $thumbnail_url)
+    public function setThumbnail(int $library_id, string $video_guid, string $thumbnail_url): string
     {
         return $this->APIcall('POST', "library/$library_id/videos/$video_guid/thumbnail?$thumbnail_url", [], false, true);
     }
 
-    public function addCaptions(int $library_id, string $video_guid, string $srclang, string $label, string $captions_file)
+    public function addCaptions(int $library_id, string $video_guid, string $srclang, string $label, string $captions_file): string
     {
         return $this->APIcall('POST', "library/$library_id/videos/$video_guid/captions/$srclang?label=$label&captionsFile=$captions_file", [], false, true);
     }
 
-    public function deleteCaptions(int $library_id, string $video_guid, string $srclang)
+    public function deleteCaptions(int $library_id, string $video_guid, string $srclang): string
     {
         return $this->APIcall('DELETE', "library/$library_id/videos/$video_guid/captions/$srclang", [], false, true);
     }
