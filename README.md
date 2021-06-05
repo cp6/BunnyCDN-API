@@ -522,37 +522,8 @@ $bunny->closeConnection();
 ```
 
 
-### MySQL Functions
-
-Run `MySQL_database.sql`
-
-Put details in `db_connect();`
-
----
-
-Insert Pull zones into database
-```php
-$bunny->insertPullZones();
-```
----
-
-Insert Storage zones into database
-```php
-$bunny->insertStorageZones();
-```
----
-
-Insert Pull zone logs into database
-```php
-$bunny->insertPullZoneLogs($id, $date);
-```
-`$id` Pull zone id `int`
-
-`$date` Date for logs, only past 3 days (mm-dd-yy) `string`
-
 ---
 
 ## TODO
 
 * Proper exception handling
-* Improve action logging
