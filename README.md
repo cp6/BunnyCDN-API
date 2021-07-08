@@ -57,6 +57,7 @@ If you want to interact with storage zones you will need your BunnyCDN API key s
 * Purge pull zone
 * Add hostname to pull zone
 * Remove hostname from pull zone
+* Set free SSL for hostname
 * Set force SSL for pull zone
 * List pull zone HTTP access logs
 * Calculate costs
@@ -383,6 +384,14 @@ returns `array`
 
 ---
 
+`$id` Pull zone to get data from `int`
+
+returns `array`
+
+---
+
+
+
 Purge pull zone data
 
 ```php
@@ -390,6 +399,14 @@ $bunny->purgePullZone($id);
 ```
 
 `$id` Pull zone to purge `int`
+
+---
+
+Add new pullzone data
+```php
+$bunny->createPullZone($name, $origin);
+```
+returns `array`
 
 ---
 
@@ -437,6 +454,15 @@ $bunny->removeHostnamePullZone($id, $hostname);
 
 Change force SSL status for pull zone
 
+```php
+$bunny->freeSSL($hostname);
+```
+
+`$hostname` Affected hostname  `string`
+
+---
+
+Change force SSL status for pull zone
 ```php
 $bunny->forceSSLPullZone($id, $hostname, $force_ssl);
 ```
