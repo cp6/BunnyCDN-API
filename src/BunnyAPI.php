@@ -21,7 +21,7 @@ class BunnyAPI
     private string $access_key;
     private string $storage_name;
     private $connection;
-    private string $data;
+    private array $data;
     private int $stream_library_id;
     private string $stream_collection_guid = '';
     private string $stream_video_guid = '';
@@ -95,7 +95,7 @@ class BunnyAPI
         return true;
     }
 
-    private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false, bool $video_stream_call = false)
+    private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false, bool $video_stream_call = false): array
     {
         $curl = curl_init();
         if ($method === "POST") {
@@ -118,13 +118,13 @@ class BunnyAPI
                 $url = sprintf("%s?%s", $url, http_build_query(json_encode($params)));
         }
         if (!$storage_call && !$video_stream_call) {//General CDN pullzone
-            curl_setopt($curl, CURLOPT_URL, self::API_URL . "$url");
+            curl_setopt($curl, CURLOPT_URL, self::API_URL . (string)$url);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "AccessKey: $this->api_key"));
         } elseif ($video_stream_call) {//Video stream
-            curl_setopt($curl, CURLOPT_URL, self::VIDEO_STREAM_URL . "$url");
+            curl_setopt($curl, CURLOPT_URL, self::VIDEO_STREAM_URL . (string)$url);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: " . self::STREAM_LIBRARY_ACCESS_KEY . ""));
         } else {//Storage zone
-            curl_setopt($curl, CURLOPT_URL, self::STORAGE_API_URL . "$url");
+            curl_setopt($curl, CURLOPT_URL, self::STORAGE_API_URL . (string)$url);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: $this->access_key"));
         }
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
@@ -132,21 +132,23 @@ class BunnyAPI
         $result = curl_exec($curl);
         $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
-        $this->data = $result;
-        return $result;
+        if ($responseCode === 200) {
+            return $this->data = json_decode($result, true);
+        }
+        return array('http_code' => $responseCode);
     }
 
-    public function listPullZones(): string
+    public function listPullZones(): array
     {
         return $this->APIcall('GET', 'pullzone');
     }
 
-    public function getPullZone(int $id): string
+    public function getPullZone(int $id): array
     {
         return $this->APIcall('GET', "pullzone/$id");
     }
 
-    public function createPullZone(string $name, string $origin, array $args = array()): string
+    public function createPullZone(string $name, string $origin, array $args = array()): array
     {
         $args = array_merge(
             array(
@@ -158,30 +160,30 @@ class BunnyAPI
         return $this->APIcall('POST', 'pullzone', $args);
     }
 
-    public function updatePullZone(int $id, array $args = array()): string
+    public function updatePullZone(int $id, array $args = array()): array
     {
         return $this->APIcall('POST', "pullzone/$id", $args);
     }
 
-    public function pullZoneData(int $id): string
+    public function pullZoneData(int $id): array
     {
         return $this->APIcall('GET', "pullzone/$id");
     }
 
-    public function purgePullZone(int $id): string
+    public function purgePullZone(int $id): array
     {
         return $this->APIcall('POST', "pullzone/$id/purgeCache");
     }
 
-    public function deletePullZone(int $id): string
+    public function deletePullZone(int $id): array
     {
         return $this->APIcall('DELETE', "pullzone/$id");
     }
 
     public function pullZoneHostnames(int $id): ?array
     {
-        $data = json_decode($this->pullZoneData($id), true);
-        if (isset($data['Hostnames'])) {
+        $data = $this->pullZoneData($id);
+        if (isset($this->pullZoneData($id)['Hostnames'])) {
             $hn_count = count($data['Hostnames']);
             $hn_arr = array();
             foreach ($data['Hostnames'] as $a_hn) {
@@ -200,29 +202,29 @@ class BunnyAPI
         }
     }
 
-    public function addHostnamePullZone(int $id, string $hostname): string
+    public function addHostnamePullZone(int $id, string $hostname): array
     {
-        return $this->APIcall('POST', 'pullzone/addHostname', array("PullZoneId" => $id, "Hostname" => $hostname));
+        return $this->APIcall('POST', "pullzone/$id/addHostname", array("Hostname" => $hostname));
     }
 
-    public function removeHostnamePullZone(int $id, string $hostname): string
+    public function removeHostnamePullZone(int $id, string $hostname): array
     {
-        return $this->APIcall('DELETE', 'pullzone/deleteHostname', array("id" => $id, "hostname" => $hostname));
+        return $this->APIcall('DELETE', "pullzone/$id/removeHostname", array("Hostname" => $hostname));
     }
 
-    public function addFreeSSLCertificate(string $hostname): string
+    public function addFreeSSLCertificate(string $hostname): array
     {
         return $this->APIcall('GET', 'pullzone/loadFreeCertificate?hostname=' . $hostname);
     }
 
-    public function forceSSLPullZone(int $id, string $hostname, bool $force_ssl = true): string
+    public function forceSSLPullZone(int $id, string $hostname, bool $force_ssl = true): array
     {
-        return $this->APIcall('POST', 'pullzone/setForceSSL', array("PullZoneId" => $id, "Hostname" => $hostname, 'ForceSSL' => $force_ssl));
+        return $this->APIcall('POST', "pullzone/$id/setForceSSL", array("Hostname" => $hostname, 'ForceSSL' => $force_ssl));
     }
 
     public function listBlockedIpPullZone(int $id): ?array
     {
-        $data = json_decode($this->pullZoneData($id), true);
+        $data = $this->pullZoneData($id);
         if (isset($data['BlockedIps'])) {
             $ip_count = count($data['BlockedIps']);
             $ip_arr = array();
@@ -238,14 +240,39 @@ class BunnyAPI
         }
     }
 
-    public function addBlockedIpPullZone(int $id, string $ip): string
+    public function resetTokenKey(int $id): array
+    {
+        return $this->APIcall('POST', "pullzone/$id/resetSecurityKey", array());
+    }
+
+    public function addBlockedIpPullZone(int $id, string $ip): array
     {
         return $this->APIcall('POST', 'pullzone/addBlockedIp', array("PullZoneId" => $id, "BlockedIp" => $ip));
     }
 
-    public function unBlockedIpPullZone(int $id, string $ip): string
+    public function unBlockedIpPullZone(int $id, string $ip): array
     {
         return $this->APIcall('POST', 'pullzone/removeBlockedIp', array("PullZoneId" => $id, "BlockedIp" => $ip));
+    }
+
+    public function addAllowedReferrer(int $id, string $hostname): array
+    {
+        return $this->APIcall('POST', "pullzone/$id/addAllowedReferrer", array("Hostname" => $hostname));
+    }
+
+    public function removeAllowedReferrer(int $id, string $hostname): array
+    {
+        return $this->APIcall('POST', "pullzone/$id/removeAllowedReferrer", array("Hostname" => $hostname));
+    }
+
+    public function addBlockedReferrer(int $id, string $hostname): array
+    {
+        return $this->APIcall('POST', "pullzone/$id/addBlockedReferrer", array("Hostname" => $hostname));
+    }
+
+    public function removeBlockedReferrer(int $id, string $hostname): array
+    {
+        return $this->APIcall('POST', "pullzone/$id/removeBlockedReferrer", array("Hostname" => $hostname));
     }
 
     public function pullZoneLogs(int $id, string $date): array
