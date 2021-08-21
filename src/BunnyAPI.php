@@ -2,9 +2,11 @@
 
 namespace Corbpie\BunnyCdn;
 
+use Corbpie\BunnyCdn\BunnyAPIException;
+
 /**
  * Bunny CDN pull & storage zone API class
- * @version  1.4
+ * @version  1.5
  * @author corbpie
  */
 class BunnyAPI
@@ -26,8 +28,14 @@ class BunnyAPI
 
     public function __construct(int $execution_time = 240, bool $json_header = false)
     {
-        if ($this->constApiKeySet()) {
-            $this->api_key = self::API_KEY;
+        try {
+            if (!$this->constApiKeySet()) {
+                throw new BunnyAPIException("You must provide an API key");
+            } else {
+                $this->api_key = self::API_KEY;
+            }
+        } catch (BunnyAPIException $e) {//display error message
+            echo $e->errorMessage();
         }
         ini_set('max_execution_time', $execution_time);
         if ($json_header) {
@@ -35,13 +43,17 @@ class BunnyAPI
         }
     }
 
-    public function apiKey(string $api_key = ''): string
+    public function apiKey(string $api_key = '')
     {
-        if (!isset($api_key) || trim($api_key) === '') {
-            throw new Exception("You must provide an API key");
+        try {
+            if (!isset($api_key) || trim($api_key) === '') {
+                throw new BunnyAPIException('$api_key cannot be empty');
+            } else {
+                $this->api_key = $api_key;
+            }
+        } catch (BunnyAPIException $e) {//display error message
+            echo $e->errorMessage();
         }
-        $this->api_key = $api_key;
-        return json_encode(array('response' => 'success', 'action' => 'apiKey'));
     }
 
     public function zoneConnect(string $storage_name, string $access_key = ''): ?string
@@ -51,12 +63,16 @@ class BunnyAPI
         $conn_id = ftp_connect((self::HOSTNAME));
         $login = ftp_login($conn_id, $storage_name, $this->access_key);
         ftp_pasv($conn_id, true);
-        if ($conn_id) {
-            $this->connection = $conn_id;
-            return json_encode(array('response' => 'success', 'action' => 'zoneConnect'));
-        } else {
-            throw new Exception("Could not make FTP connection to " . (self::HOSTNAME) . "");
+        try {
+            if (!$conn_id) {
+                throw new BunnyAPIException("Could not make FTP connection to " . (self::HOSTNAME) . "");
+            }
+        } catch (BunnyAPIException $e) {//display error message
+            echo $e->errorMessage();
         }
+        $this->connection = $conn_id;
+        return json_encode(array('response' => 'success', 'action' => 'zoneConnect'));
+
     }
 
     protected function findStorageZoneAccessKey(string $storage_name): bool
@@ -79,11 +95,8 @@ class BunnyAPI
         return true;
     }
 
-    private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false, bool $video_stream_call = false): string
+    private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false, bool $video_stream_call = false)
     {
-        if (!$this->constApiKeySet()) {
-            throw new Exception("apiKey() is not set");
-        }
         $curl = curl_init();
         if ($method === "POST") {
             curl_setopt($curl, CURLOPT_POST, 1);
