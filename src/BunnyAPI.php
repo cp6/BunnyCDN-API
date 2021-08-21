@@ -56,7 +56,7 @@ class BunnyAPI
         }
     }
 
-    public function zoneConnect(string $storage_name, string $access_key = ''): ?string
+    public function zoneConnect(string $storage_name, string $access_key = '')
     {
         $this->storage_name = $storage_name;
         (empty($access_key)) ? $this->findStorageZoneAccessKey($storage_name) : $this->access_key = $access_key;
@@ -66,13 +66,12 @@ class BunnyAPI
         try {
             if (!$conn_id) {
                 throw new BunnyAPIException("Could not make FTP connection to " . (self::HOSTNAME) . "");
+            } else {
+                $this->connection = $conn_id;
             }
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
         }
-        $this->connection = $conn_id;
-        return json_encode(array('response' => 'success', 'action' => 'zoneConnect'));
-
     }
 
     protected function findStorageZoneAccessKey(string $storage_name): bool
