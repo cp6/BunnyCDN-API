@@ -311,22 +311,22 @@ class BunnyAPI
         return $line;
     }
 
-    public function listStorageZones(): string
+    public function listStorageZones(): array
     {
         return $this->APIcall('GET', 'storagezone');
     }
 
-    public function addStorageZone(string $name): string
+    public function addStorageZone(string $name, string $origin_url, string $main_region = 'DE', array $replicated_regions = []): array
     {
-        return $this->APIcall('POST', 'storagezone', array("Name" => $name));
+        return $this->APIcall('POST', 'storagezone', array("Name" => $name, "OriginUrl" => $origin_url, "Region" => $main_region, "ReplicationRegions" => $replicated_regions));
     }
 
-    public function deleteStorageZone(int $id): string
+    public function deleteStorageZone(int $id): array
     {
         return $this->APIcall('DELETE', "storagezone/$id");
     }
 
-    public function purgeCache(string $url): string
+    public function purgeCache(string $url): array
     {
         return $this->APIcall('POST', 'purge', array("url" => $url));
     }
@@ -348,29 +348,29 @@ class BunnyAPI
         return $value;
     }
 
-    public function getStatistics(): string
+    public function getStatistics(): array
     {
         return $this->APIcall('GET', 'statistics');
     }
 
-    public function getBilling(): string
+    public function getBilling(): array
     {
         return $this->APIcall('GET', 'billing');
     }
 
-    public function balance(): string
+    public function balance(): array
     {
-        return json_decode($this->getBilling(), true)['Balance'];
+        return $this->getBilling()['Balance'];
     }
 
-    public function monthCharges(): string
+    public function monthCharges(): array
     {
-        return json_decode($this->getBilling(), true)['ThisMonthCharges'];
+        return $this->getBilling()['ThisMonthCharges'];
     }
 
-    public function totalBillingAmount(bool $format = false, int $decimals = 2): ?array
+    public function totalBillingAmount(bool $format = false, int $decimals = 2): array
     {
-        $data = json_decode($this->getBilling(), true);
+        $data = $this->getBilling();
         $tally = 0;
         foreach ($data['BillingRecords'] as $charge) {
             $tally += $charge['Amount'];
@@ -384,13 +384,13 @@ class BunnyAPI
 
     public function monthChargeBreakdown(): array
     {
-        $ar = json_decode($this->getBilling(), true);
+        $ar = $this->getBilling();
         return array('storage' => $ar['MonthlyChargesStorage'], 'EU' => $ar['MonthlyChargesEUTraffic'],
             'US' => $ar['MonthlyChargesUSTraffic'], 'ASIA' => $ar['MonthlyChargesASIATraffic'],
             'SA' => $ar['MonthlyChargesSATraffic']);
     }
 
-    public function applyCoupon(string $code): string
+    public function applyCoupon(string $code): array
     {
         return $this->APIcall('POST', 'applycode', array("couponCode" => $code));
     }
