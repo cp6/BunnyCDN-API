@@ -88,10 +88,7 @@ class BunnyAPI
 
     protected function constApiKeySet(): bool
     {
-        if (!defined("self::API_KEY") || empty(self::API_KEY)) {
-            return false;
-        }
-        return true;
+        return !(!defined("self::API_KEY") || empty(self::API_KEY));
     }
 
     private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false, bool $video_stream_call = false): array
@@ -99,8 +96,9 @@ class BunnyAPI
         $curl = curl_init();
         if ($method === "POST") {
             curl_setopt($curl, CURLOPT_POST, 1);
-            if (!empty($params))
+            if (!empty($params)) {
                 curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
+            }
         } elseif ($method === "PUT") {
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
             curl_setopt($curl, CURLOPT_POST, 1);
@@ -110,11 +108,13 @@ class BunnyAPI
             curl_setopt($curl, CURLOPT_INFILESIZE, filesize($params->file));
         } elseif ($method === "DELETE") {
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-            if (!empty($params))
+            if (!empty($params)) {
                 curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
+            }
         } else {//GET
-            if (!empty($params))
+            if (!empty($params)) {
                 $url = sprintf("%s?%s", $url, http_build_query(json_encode($params)));
+            }
         }
         if (!$storage_call && !$video_stream_call) {//General CDN pullzone
             curl_setopt($curl, CURLOPT_URL, self::API_URL . (string)$url);
@@ -196,9 +196,8 @@ class BunnyAPI
                 'hostname_count' => $hn_count,
                 'hostnames' => $hn_arr
             );
-        } else {
-            return array('hostname_count' => 0);
         }
+        return array('hostname_count' => 0);
     }
 
     public function addHostnamePullZone(int $id, string $hostname): array
@@ -234,9 +233,8 @@ class BunnyAPI
                 'blocked_ip_count' => $ip_count,
                 'ips' => $ip_arr
             );
-        } else {
-            return array('blocked_ip_count' => 0);
         }
+        return array('blocked_ip_count' => 0);
     }
 
     public function resetTokenKey(int $id): array
@@ -376,9 +374,8 @@ class BunnyAPI
         }
         if ($format) {
             return array('amount' => (float)number_format($tally, $decimals), 'since' => str_replace('T', ' ', $charge['Timestamp']));
-        } else {
-            return array('amount' => $tally, 'since' => str_replace('T', ' ', $charge['Timestamp']));
         }
+        return array('amount' => $tally, 'since' => str_replace('T', ' ', $charge['Timestamp']));
     }
 
     public function monthChargeBreakdown(): array
@@ -453,10 +450,8 @@ class BunnyAPI
         $obj = scandir($dir);
         $files_uploaded = 0;
         foreach ($obj as $file) {
-            if (!is_dir($file)) {
-                if (ftp_put($this->connection, $place . $file, "$dir/$file", $mode)) {
-                    $files_uploaded++;
-                }
+            if (!is_dir($file) && ftp_put($this->connection, $place . $file, "$dir/$file", $mode)) {
+                $files_uploaded++;
             }
         }
         return array('action' => __FUNCTION__, 'value' => $dir, 'files_uploaded' => $files_uploaded);
@@ -561,7 +556,7 @@ class BunnyAPI
         foreach ($array as $value) {
             if ($value['IsDirectory'] === false) {
                 $file_name = $value['ObjectName'];
-                if (ftp_get($this->connection, "" . $dl_into . "$file_name", $file_name, $mode)) {
+                if (ftp_get($this->connection, $dl_into . "$file_name", $file_name, $mode)) {
                     $files_downloaded++;
                 }
             }
