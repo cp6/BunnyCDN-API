@@ -76,7 +76,7 @@ class BunnyAPI
 
     protected function findStorageZoneAccessKey(string $storage_name): bool
     {
-        $data = json_decode($this->listStorageZones(), true);
+        $data = $this->listStorageZones();
         foreach ($data as $zone) {
             if ($zone['Name'] === $storage_name) {
                 $this->access_key = $zone['Password'];
@@ -86,7 +86,7 @@ class BunnyAPI
         return false;//Never found access key for said storage zone
     }
 
-    protected function constApiKeySet(): ?bool
+    protected function constApiKeySet(): bool
     {
         if (!defined("self::API_KEY") || empty(self::API_KEY)) {
             return false;
@@ -409,89 +409,68 @@ class BunnyAPI
         $this->APIcall('GET', $this->storage_name . "/" . $file, array(), true);
     }
 
-    public function createFolder(string $name): ?string
+    public function createFolder(string $name): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         if (ftp_mkdir($this->connection, $name)) {
-            return json_encode(array('response' => 'success', 'action' => 'createFolder'));
-        } else {
-            throw new Exception("Could not create folder $name");
+            return array('response' => 'success', 'action' => __FUNCTION__, 'value' => $name);
         }
+        return array('response' => 'fail', 'action' => __FUNCTION__, 'value' => $name);
     }
 
-    public function deleteFolder(string $name): ?string
+    public function deleteFolder(string $name): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         if (ftp_rmdir($this->connection, $name)) {
-            return json_encode(array('response' => 'success', 'action' => 'deleteFolder'));
-        } else {
-            throw new Exception("Could not delete $name");
+            return array('response' => 'success', 'action' => __FUNCTION__, 'value' => $name);
         }
+        return array('response' => 'fail', 'action' => __FUNCTION__, 'value' => $name);
     }
 
-    public function deleteFile(string $name): ?string
+    public function deleteFile(string $name): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         if (ftp_delete($this->connection, $name)) {
-            return json_encode(array('response' => 'success', 'action' => 'deleteFile'));
-        } else {
-            throw new Exception("Could not delete $name");
+            return array('response' => 'success', 'action' => __FUNCTION__, 'value' => $name);
         }
+        return array('response' => 'fail', 'action' => __FUNCTION__, 'value' => $name);
     }
 
-    public function deleteAllFiles(string $dir): ?string
+    public function deleteAllFiles(string $dir): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
-        $url = (self::STORAGE_API_URL);
-        $array = json_decode(file_get_contents("$url/$this->storage_name/" . $dir . "/?AccessKey=$this->access_key"), true);
+        $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name/{$dir}/?AccessKey=" . $this->access_key), true);
+        $files_deleted = 0;
         foreach ($array as $value) {
             if ($value['IsDirectory'] === false) {
                 $file_name = $value['ObjectName'];
-                $full_name = "$dir/$file_name";
-                if (ftp_delete($this->connection, $full_name)) {
-                    echo json_encode(array('response' => 'success', 'action' => 'deleteAllFiles'));
-                } else {
-                    throw new Exception("Could not delete $full_name");
+                if (ftp_delete($this->connection, "$dir/$file_name")) {
+                    $files_deleted++;
                 }
             }
         }
+        return array('action' => __FUNCTION__, 'value' => $dir, 'files_deleted' => $files_deleted);
     }
 
-    public function uploadAllFiles(string $dir, string $place, $mode = FTP_BINARY): ?string
+    public function uploadAllFiles(string $dir, string $place, $mode = FTP_BINARY): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         $obj = scandir($dir);
+        $files_uploaded = 0;
         foreach ($obj as $file) {
             if (!is_dir($file)) {
-                if (ftp_put($this->connection, "" . $place . "$file", "$dir/$file", $mode)) {
-                    echo json_encode(array('response' => 'success', 'action' => 'uploadAllFiles'));
-                } else {
-                    throw new Exception("Error uploading " . $place . "$file as " . $place . "/" . $file . "");
+                if (ftp_put($this->connection, $place . $file, "$dir/$file", $mode)) {
+                    $files_uploaded++;
                 }
             }
         }
+        return array('action' => __FUNCTION__, 'value' => $dir, 'files_uploaded' => $files_uploaded);
     }
 
     public function getFileSize(string $file): int
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         return ftp_size($this->connection, $file);
     }
 
     public function dirSize(string $dir = ''): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
-        $url = (self::STORAGE_API_URL);
-        $array = json_decode(file_get_contents("$url/$this->storage_name" . $dir . "/?AccessKey=$this->access_key"), true);
-        $size = 0;
-        $files = 0;
+        $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name" . $dir . "/?AccessKey=" . $this->access_key), true);
+        $size = $files = 0;
         foreach ($array as $value) {
             if ($value['IsDirectory'] === false) {
                 $size += $value['Length'];
@@ -504,76 +483,59 @@ class BunnyAPI
 
     public function currentDir(): string
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         return ftp_pwd($this->connection);
     }
 
-    public function changeDir(string $moveto): ?string
+    public function changeDir(string $moveto): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         if (ftp_chdir($this->connection, $moveto)) {
-            return json_encode(array('response' => 'success', 'action' => 'changeDir'));
-        } else {
-            throw new Exception("Error moving to $moveto");
+            return array('response' => 'success', 'action' => __FUNCTION__, 'value' => $moveto);
         }
+        return array('response' => 'fail', 'action' => __FUNCTION__, 'value' => $moveto);
     }
 
-    public function moveUpOne(): ?string
+    public function moveUpOne(): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         if (ftp_cdup($this->connection)) {
-            return json_encode(array('response' => 'success', 'action' => 'moveUpOne'));
-        } else {
-            throw new Exception("Error moving to parent dir");
+            return array('response' => 'success', 'action' => __FUNCTION__);
         }
+        return array('response' => 'fail', 'action' => __FUNCTION__);
     }
 
-    public function renameFile(string $dir, string $file_name, string $new_file_name): void
+    public function renameFile(string $dir, string $file_name, string $new_file_name): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         $path_data = pathinfo("{$dir}$file_name");
         $file_type = $path_data['extension'];
         if (ftp_get($this->connection, "TEMPFILE.$file_type", "{$dir}$file_name", FTP_BINARY)) {
             if (ftp_put($this->connection, "{$dir}$new_file_name", "TEMPFILE.$file_type", FTP_BINARY)) {
                 $this->deleteFile("{$dir}$file_name");
-            } else {
-                throw new Exception("ftp_put fail: {$dir}$new_file_name, TEMPFILE.$file_type");
+                return array('response' => 'success', 'action' => __FUNCTION__, 'old' => "{$dir}$file_name", 'new' => "{$dir}$new_file_name");
             }
-        } else {
-            throw new Exception("ftp_get fail: TEMPFILE.$file_type, {$dir}$file_name");
+            return array('response' => 'fail', 'action' => __FUNCTION__, 'old' => "{$dir}$file_name", 'new' => "{$dir}$new_file_name");
         }
+        return array('response' => 'fail', 'action' => __FUNCTION__, 'old' => "{$dir}$file_name", 'new' => "{$dir}$new_file_name");
     }
 
-    public function moveFile(string $dir, string $file_name, string $move_to): void
+    public function moveFile(string $dir, string $file_name, string $move_to): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         $path_data = pathinfo("{$dir}$file_name");
         $file_type = $path_data['extension'];
         if (ftp_get($this->connection, "TEMPFILE.$file_type", "{$dir}$file_name", FTP_BINARY)) {
             if (ftp_put($this->connection, "$move_to{$file_name}", "TEMPFILE.$file_type", FTP_BINARY)) {
                 $this->deleteFile("{$dir}$file_name");
-            } else {
-                throw new Exception("ftp_put fail");
+                return array('response' => 'success', 'action' => __FUNCTION__, 'file' => "{$dir}$file_name", 'move_to' => $move_to);
             }
-        } else {
-            throw new Exception("ftp_get fail");
+            return array('response' => 'fail', 'action' => __FUNCTION__, 'file' => "{$dir}$file_name", 'move_to' => $move_to);
         }
+        return array('response' => 'fail', 'action' => __FUNCTION__, 'file' => "{$dir}$file_name", 'move_to' => $move_to);
     }
 
-    public function downloadFile(string $save_as, string $get_file, int $mode = FTP_BINARY): ?string
+    public function downloadFile(string $save_as, string $get_file, int $mode = FTP_BINARY): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         if (ftp_get($this->connection, $save_as, $get_file, $mode)) {
-            return json_encode(array('response' => 'success', 'action' => 'downloadFile'));
-        } else {
-            throw new Exception("Error downloading $get_file as $save_as");
+            return array('response' => 'success', 'action' => __FUNCTION__, 'file' => $get_file, 'save_as' => $save_as);
         }
+        return array('response' => 'fail', 'action' => __FUNCTION__, 'file' => $get_file, 'save_as' => $save_as);
     }
 
     public function downloadFileWithProgress(string $save_as, string $get_file, string $progress_file = 'DOWNLOAD_PERCENT.txt'): void
@@ -592,33 +554,27 @@ class BunnyAPI
         fclose($in);
     }
 
-    public function downloadAll(string $dir_dl_from = '', string $dl_into = '', int $mode = FTP_BINARY): ?string
+    public function downloadAll(string $dir_dl_from = '', string $dl_into = '', int $mode = FTP_BINARY): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
-        $url = (self::STORAGE_API_URL);
-        $array = json_decode(file_get_contents("$url/$this->storage_name" . $dir_dl_from . "/?AccessKey=$this->access_key"), true);
+        $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name" . $dir_dl_from . "/?AccessKey=" . $this->access_key), true);
+        $files_downloaded = 0;
         foreach ($array as $value) {
             if ($value['IsDirectory'] === false) {
                 $file_name = $value['ObjectName'];
                 if (ftp_get($this->connection, "" . $dl_into . "$file_name", $file_name, $mode)) {
-                    echo json_encode(array('response' => 'success', 'action' => 'downloadAll'));
-                } else {
-                    throw new Exception("Error downloading $file_name to " . $dl_into . "$file_name");
+                    $files_downloaded++;
                 }
             }
         }
+        return array('action' => __FUNCTION__, 'files_downloaded' => $files_downloaded);
     }
 
-    public function uploadFile(string $upload, string $upload_as, int $mode = FTP_BINARY): ?string
+    public function uploadFile(string $upload, string $upload_as, int $mode = FTP_BINARY): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
         if (ftp_put($this->connection, $upload_as, $upload, $mode)) {
-            return json_encode(array('response' => 'success', 'action' => 'uploadFile'));
-        } else {
-            throw new Exception("Error uploading $upload as $upload_as");
+            return array('response' => 'success', 'action' => __FUNCTION__, 'file' => $upload, 'upload_as' => $upload_as);
         }
+        return array('response' => 'fail', 'action' => __FUNCTION__, 'file' => $upload, 'upload_as' => $upload_as);
     }
 
     public function uploadFileWithProgress(string $upload, string $upload_as, string $progress_file = 'UPLOAD_PERCENT.txt'): void
@@ -637,7 +593,7 @@ class BunnyAPI
         fclose($out);
     }
 
-    public function boolToInt(bool $bool): ?int
+    public function boolToInt(bool $bool): int
     {
         if ($bool) {
             return 1;
@@ -650,21 +606,15 @@ class BunnyAPI
         header('Content-Type: application/json');
     }
 
-    public function listAllOG(): string
+    public function listAllOG(): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
-        $url = (self::STORAGE_API_URL);
-        return file_get_contents("$url/$this->storage_name/?AccessKey=$this->access_key");
+        return json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name/?AccessKey=" . $this->access_key), true);
     }
 
-    public function listFiles(string $location = ''): string
+    public function listFiles(string $location = ''): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
-        $url = (self::STORAGE_API_URL);
-        $array = json_decode(file_get_contents("$url/$this->storage_name" . $location . "/?AccessKey=$this->access_key"), true);
-        $items = array('storage_name' => "" . $this->storage_name, 'current_dir' => $location, 'data' => array());
+        $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name" . $location . "/?AccessKey=" . $this->access_key), true);
+        $items = array('storage_name' => $this->storage_name, 'current_dir' => $location, 'data' => array());
         foreach ($array as $value) {
             if ($value['IsDirectory'] === false) {
                 $created = date('Y-m-d H:i:s', strtotime($value['DateCreated']));
@@ -681,15 +631,12 @@ class BunnyAPI
                     'last_changed' => $last_changed, 'guid' => $guid);
             }
         }
-        return json_encode($items);
+        return $items;
     }
 
-    public function listFolders(string $location = ''): string
+    public function listFolders(string $location = ''): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
-        $url = (self::STORAGE_API_URL);
-        $array = json_decode(file_get_contents("$url/$this->storage_name" . $location . "/?AccessKey=$this->access_key"), true);
+        $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name" . $location . "/?AccessKey=$this->access_key"), true);
         $items = array('storage_name' => $this->storage_name, 'current_dir' => $location, 'data' => array());
         foreach ($array as $value) {
             $created = date('Y-m-d H:i:s', strtotime($value['DateCreated']));
@@ -701,16 +648,13 @@ class BunnyAPI
                     'last_changed' => $last_changed, 'guid' => $guid);
             }
         }
-        return json_encode($items);
+        return $items;
     }
 
-    public function listAll(string $location = ''): string
+    public function listAll(string $location = ''): array
     {
-        if (is_null($this->connection))
-            throw new Exception("zoneConnect() is not set");
-        $url = (self::STORAGE_API_URL);
-        $array = json_decode(file_get_contents("$url/$this->storage_name" . $location . "/?AccessKey=$this->access_key"), true);
-        $items = array('storage_name' => "" . $this->storage_name, 'current_dir' => $location, 'data' => array());
+        $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name" . $location . "/?AccessKey=" . $this->access_key), true);
+        $items = array('storage_name' => $this->storage_name, 'current_dir' => $location, 'data' => array());
         foreach ($array as $value) {
             $created = date('Y-m-d H:i:s', strtotime($value['DateCreated']));
             $last_changed = date('Y-m-d H:i:s', strtotime($value['LastChanged']));
@@ -730,28 +674,27 @@ class BunnyAPI
             $items['data'][] = array('name' => $file_name, 'file_type' => $file_type, 'size' => $size_kb, 'is_dir' => $value['IsDirectory'], 'created' => $created,
                 'last_changed' => $last_changed, 'guid' => $guid);
         }
-        return json_encode($items);
+        return $items;
     }
 
-    public function closeConnection(): ?string
+    public function closeConnection(): array
     {
         if (ftp_close($this->connection)) {
-            return json_encode(array('response' => 'success', 'action' => 'closeConnection'));
-        } else {
-            throw new Exception("Error closing connection to " . (self::HOSTNAME) . "");
+            return array('response' => 'success', 'action' => __FUNCTION__);
         }
+        return array('response' => 'fail', 'action' => __FUNCTION__);
     }
 
     public function costCalculator(int $bytes): array
     {
-        $zone1 = '0.01';
-        $zone2 = '0.03';
-        $zone3 = '0.045';
-        $zone4 = '0.06';
-        $s500t = '0.005';
-        $s1pb = '0.004';
-        $s2pb = '0.003';
-        $s2pb_plus = '0.0025';
+        $zone1 = 0.01;
+        $zone2 = 0.03;
+        $zone3 = 0.045;
+        $zone4 = 0.06;
+        $s500t = 0.005;
+        $s1pb = 0.004;
+        $s2pb = 0.003;
+        $s2pb_plus = 0.0025;
         $gigabytes = (float)($bytes / 1073741824);
         $terabytes = (float)($gigabytes / 1024);
         return array(
@@ -789,12 +732,12 @@ class BunnyAPI
         $this->stream_video_guid = $video_guid;
     }
 
-    public function getVideoCollections(): string
+    public function getVideoCollections(): array
     {
         return $this->APIcall('GET', "library/{$this->stream_library_id}/collections", [], false, true);
     }
 
-    public function getStreamCollections(int $library_id = 0, int $page = 1, int $items_pp = 100, string $order_by = 'date'): string
+    public function getStreamCollections(int $library_id = 0, int $page = 1, int $items_pp = 100, string $order_by = 'date'): array
     {
         if ($library_id === 0) {
             $library_id = $this->stream_library_id;
@@ -802,7 +745,7 @@ class BunnyAPI
         return $this->APIcall('GET', "library/$library_id/collections?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
     }
 
-    public function getStreamForCollection(int $library_id = 0, string $collection_guid = ''): string
+    public function getStreamForCollection(int $library_id = 0, string $collection_guid = ''): array
     {
         if ($library_id === 0) {
             $library_id = $this->stream_library_id;
@@ -813,65 +756,64 @@ class BunnyAPI
         return $this->APIcall('GET', "library/$library_id/collections/$collection_guid", [], false, true);
     }
 
-    public function updateCollection(int $library_id, string $collection_guid, string $video_library_id, int $video_count, int $total_size): string
+    public function updateCollection(int $library_id, string $collection_guid, string $video_library_id, int $video_count, int $total_size): array
     {
         return $this->APIcall('POST', "library/$library_id/collections/$collection_guid", array("videoLibraryId" => $video_library_id, "videoCount" => $video_count, "totalSize" => $total_size), false, true);
     }
 
-    public function deleteCollection(int $library_id, string $collection_id): string
+    public function deleteCollection(int $library_id, string $collection_id): array
     {
         return $this->APIcall('DELETE', "library/$library_id/collections/$collection_id", [], false, true);
     }
 
-    public function createCollection(int $library_id, string $video_library_id, int $video_count, int $total_size): string
+    public function createCollection(int $library_id, string $video_library_id, int $video_count, int $total_size): array
     {
         return $this->APIcall('POST', "library/$library_id/collections", array("videoLibraryId" => $video_library_id, "videoCount" => $video_count, "totalSize" => $total_size), false, true);
     }
 
-    public function listVideos(int $page = 1, int $items_pp = 100, string $order_by = 'date'): string
+    public function listVideos(int $page = 1, int $items_pp = 100, string $order_by = 'date'): array
     {
         if (!isset($this->stream_library_id)) {
-            throw new Exception("You must set library id with: setStreamLibraryId()");
+            return array('response' => 'fail', 'action' => __FUNCTION__, 'message' => 'You must set library id with: setStreamLibraryId()');
         }
         return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
     }
 
-    public function getVideo(int $library_id, string $video_guid): string
+    public function getVideo(int $library_id, string $video_guid): array
     {
         return $this->APIcall('GET', "library/$library_id/videos/$video_guid", [], false, true);
     }
 
-    public function deleteVideo(int $library_id, string $video_guid): ?string
+    public function deleteVideo(int $library_id, string $video_guid): array
     {
         return $this->APIcall('DELETE', "library/$library_id/videos/$video_guid", [], false, true);
     }
 
-    public function createVideo(int $library_id, string $video_title, string $collection_guid = ''): ?string
+    public function createVideo(int $library_id, string $video_title, string $collection_guid = ''): array
     {
         if (!empty($collection_guid)) {
             return $this->APIcall('POST', "library/$library_id/videos?title=$video_title&collectionId=$collection_guid", [], false, true);
-        } else {
-            return $this->APIcall('POST', "library/$library_id/videos?title=$video_title", [], false, true);
         }
+        return $this->APIcall('POST', "library/$library_id/videos?title=$video_title", [], false, true);
     }
 
-    public function uploadVideo(int $library_id, string $video_guid, string $video_to_upload): string
+    public function uploadVideo(int $library_id, string $video_guid, string $video_to_upload): array
     {
         //Need to use createVideo() first to get video guid
         return $this->APIcall('PUT', "library/$library_id/videos/$video_guid", array('file' => $video_to_upload), false, true);
     }
 
-    public function setThumbnail(int $library_id, string $video_guid, string $thumbnail_url): string
+    public function setThumbnail(int $library_id, string $video_guid, string $thumbnail_url): array
     {
         return $this->APIcall('POST', "library/$library_id/videos/$video_guid/thumbnail?$thumbnail_url", [], false, true);
     }
 
-    public function addCaptions(int $library_id, string $video_guid, string $srclang, string $label, string $captions_file): string
+    public function addCaptions(int $library_id, string $video_guid, string $srclang, string $label, string $captions_file): array
     {
         return $this->APIcall('POST', "library/$library_id/videos/$video_guid/captions/$srclang?label=$label&captionsFile=$captions_file", [], false, true);
     }
 
-    public function deleteCaptions(int $library_id, string $video_guid, string $srclang): string
+    public function deleteCaptions(int $library_id, string $video_guid, string $srclang): array
     {
         return $this->APIcall('DELETE', "library/$library_id/videos/$video_guid/captions/$srclang", [], false, true);
     }
