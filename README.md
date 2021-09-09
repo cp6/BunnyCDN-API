@@ -6,7 +6,7 @@ zones [API](https://bunnycdn.docs.apiary.io/).
 This class whilst having a main focus on storage zone interaction includes pull zone features. Combining API with FTP,
 managing and using BunnyCDN storage zones just got easier.
 
-[![Generic badge](https://img.shields.io/badge/version-1.4-blue.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/version-1.5-blue.svg)](https://shields.io/)
 
 **Note video streaming API is seemingly not finalized and is changing**
 
