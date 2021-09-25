@@ -133,3 +133,14 @@ echo json_encode($bunny->videoResolutionsArray('e6410005-d591-4a7e-a83d-6c1eef0f
 
 //Get size of video
 echo json_encode($bunny->videoSize('e6410005-d591-4a7e-a83d-6c1eef0fdc78', 'MB'));
+
+
+//Create a video (prepare for upload)
+echo json_encode($bunny->createVideo('title_for_the_video'));
+//OR In collection
+echo json_encode($bunny->createVideoForCollection('title_for_the_video'));
+//These return information for the video. Importantly the video guid
+
+//Upload the video file
+echo json_encode($bunny->uploadVideo('a6e8483a-7538-4eb1-bb1f-6c1eef0fdc78', 'test_video.mp4'));
+//Uploads test_video.mp4
