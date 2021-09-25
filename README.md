@@ -639,15 +639,13 @@ $bunny->setStreamVideoGuid($video_guid);
 
 ---
 
-Get video collections for library
+Get video collections for library id
+
+Requires ```setStreamLibraryId()``` to be set.
 
 ```php
-$bunny->getStreamCollections($library_id, $page, $items_pp,$order_by);
+$bunny->getStreamCollections($page, $items_pp,$order_by);
 ```
-
-`$library_id` library id `int`
-
-*0 = use set library id from setStreamLibraryId()*
 
 `$page` page number `int`
 
@@ -659,53 +657,46 @@ $bunny->getStreamCollections($library_id, $page, $items_pp,$order_by);
 
 Get streams for a collection
 
+Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()``` to be set.
+
 ```php
-$bunny->getStreamForCollection($library_id, $collection_guid);
+$bunny->getStreamForCollection();
 ```
-
-`$library_id` library id `int`
-
-*0 = use set library id from setStreamLibraryId()*
-
-`$collection_guid` video collection guid `string`
-
-*leave empty to use set collection guid from setStreamCollectionGuid()*
 
 ---
 
 Update stream collection
 
+Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()``` to be set.
+
+
 ```php
-$bunny->updateCollection($library_id, $collection_guid);
+$bunny->updateCollection($updated_collection_name);
 ```
 
-`$library_id` library id `int`
-
-`$collection_guid` video collection guid `string`
+`$updated_collection_name` the name to update video collection to `string`
 
 ---
 
 Delete stream collection
 
+Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()``` to be set.
+
 ```php
-$bunny->deleteCollection($library_id, $collection_guid);
+$bunny->deleteCollection();
 ```
-
-`$library_id` library id `int`
-
-`$collection_guid` video collection guid `string`
 
 ---
 
 Create stream collection
 
+Requires ```setStreamLibraryId()``` to be set.
+
 ```php
-$bunny->createCollection($library_id, $collection_guid);
+$bunny->createCollection($new_collection_name);
 ```
 
-`$library_id` library id `int`
-
-`$collection_guid` video collection guid `string`
+`$new_collection_name` the name for your new video collection `string`
 
 ---
 
