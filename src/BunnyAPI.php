@@ -768,10 +768,16 @@ class BunnyAPI
 
     public function listVideos(int $page = 1, int $items_pp = 100, string $order_by = 'date'): array
     {
-        if (!isset($this->stream_library_id)) {
-            return array('response' => 'fail', 'action' => __FUNCTION__, 'message' => 'You must set library id with: setStreamLibraryId()');
+        if ($this->isStreamLibraryIdSet()) {
+            return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
         }
-        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
+    }
+
+    public function listVideosForCollectionId(int $page = 1, int $items_pp = 100, string $order_by = 'date'): array
+    {
+        if ($this->isStreamLibraryIdSet() && $this->isStreamCollectionGuidSet()) {
+            return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?collection={$this->stream_collection_guid}&page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
+        }
     }
 
     public function getVideo(int $library_id, string $video_guid): array
@@ -813,4 +819,47 @@ class BunnyAPI
         return $this->APIcall('DELETE', "library/$library_id/videos/$video_guid/captions/$srclang", [], false, true);
     }
 
+    public function videoResolutionsArray(string $video_guid): array
+    {
+        if ($this->isStreamLibraryIdSet()) {
+            $data = $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
+            return explode(",", $data['availableResolutions']);
+        }
+    }
+
+    public function videoSize(string $video_guid, string $size_type = 'MB', bool $format = false, float $decimals = 2): float
+    {
+        if ($this->isStreamLibraryIdSet()) {
+            $data = $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
+            return $this->convertBytes($data['storageSize'], $size_type, $format, $decimals);
+        }
+    }
+
+    private function isStreamLibraryIdSet(): bool
+    {
+        try {
+            if (!isset($this->stream_library_id)) {
+                throw new BunnyAPIException("You must set the stream library id first. Use setStreamLibraryId()");
+            } else {
+                return true;
+            }
+        } catch (BunnyAPIException $e) {//display error message
+            echo $e->errorMessage();
+            exit;
+        }
+    }
+
+    private function isStreamCollectionGuidSet(): bool
+    {
+        try {
+            if (!isset($this->stream_collection_guid)) {
+                throw new BunnyAPIException("You must set the stream collection guid first. Use setStreamCollectionGuid()");
+            } else {
+                return true;
+            }
+        } catch (BunnyAPIException $e) {//display error message
+            echo $e->errorMessage();
+            exit;
+        }
+    }
 }
