@@ -609,6 +609,16 @@ $bunny->setStreamLibraryId($library_id);
 
 ---
 
+Get video collections
+
+Requires ```setStreamLibraryId()``` to be set.
+
+```php
+$bunny->getVideoCollections();
+```
+
+---
+
 Set video collection guid
 
 ```php
@@ -751,7 +761,7 @@ $bunny->createVideo($library_id, $video_title, $collection_guid);
 
 Upload video
 
-Need to use createVideo() first to get video guid
+Need to use ```createVideo()``` first to get video guid
 
 ```php
 $bunny->uploadVideo($library_id, $collection_guid, $video_to_upload);
@@ -776,6 +786,26 @@ $bunny->setThumbnail($library_id, $video_guid, $thumbnail_url);
 `$video_guid` video guid `string`
 
 `$thumbnail_url` image url `string`
+
+---
+
+Get video resolutions
+
+Requires ```setStreamLibraryId()``` to be set.
+
+```php
+$bunny->videoResolutionsArray($video_guid);
+```
+
+---
+
+Get video size
+
+Requires ```setStreamLibraryId()``` to be set.
+
+```php
+$bunny->videoSize($video_guid);
+```
 
 ---
 
