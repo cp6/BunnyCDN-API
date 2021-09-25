@@ -1,12 +1,13 @@
 # BunnyCDN API Class
 
-The most comprehensive, feature packed and easy to use PHP class for the BunnyCDN pull, video streaming and storage
-zones [API](https://bunnycdn.docs.apiary.io/).
+The most comprehensive, feature packed and easy to use PHP class for [bunny.net](https://bunny.net?ref=qxdxfxutxf) (
+BunnyCDN) pull, video streaming and storage zones [API](https://docs.bunny.net/reference/bunnynet-api-overview).
 
 This class whilst having a main focus on storage zone interaction includes pull zone features. Combining API with FTP,
 managing and using BunnyCDN storage zones just got easier.
 
-[![Generic badge](https://img.shields.io/badge/version-1.5-blue.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/version-1.6-blue.svg)]()
+[![Generic badge](https://img.shields.io/badge/PHP-8-purple.svg)]()
 
 **Note video streaming API is seemingly not finalized and is changing**
 
@@ -599,6 +600,8 @@ $bunny->closeConnection();
 
 ## Video streaming
 
+**You can only get the video library id from your bunny.net stream library page**
+
 Set video stream library id
 
 ```php
@@ -668,7 +671,6 @@ $bunny->getStreamForCollection();
 Update stream collection
 
 Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()``` to be set.
-
 
 ```php
 $bunny->updateCollection($updated_collection_name);
