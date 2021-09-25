@@ -734,115 +734,121 @@ class BunnyAPI
 
     public function getStreamCollections(int $page = 1, int $items_pp = 100, string $order_by = 'date'): array
     {
-        if ($this->isStreamLibraryIdSet()) {
-            return $this->APIcall('GET', "library/{$this->stream_library_id}/collections?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
-        }
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/collections?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
     }
 
     public function getStreamForCollection(): array
     {
-        if ($this->isStreamLibraryIdSet() && $this->isStreamCollectionGuidSet()) {
-            return $this->APIcall('GET', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, [], false, true);
-        }
+        $this->checkStreamLibraryIdSet();
+        $this->checkStreamCollectionGuidSet();
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, [], false, true);
     }
 
     public function updateCollection(string $updated_collection_name): array
     {
-        if ($this->isStreamLibraryIdSet()) {
-            return $this->APIcall('POST', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, array("name" => $updated_collection_name), false, true);
-        }
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, array("name" => $updated_collection_name), false, true);
     }
 
     public function deleteCollection(): array
     {
-        if ($this->isStreamLibraryIdSet() && $this->isStreamCollectionGuidSet()) {
-            return $this->APIcall('DELETE', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, [], false, true);
-        }
+        $this->checkStreamLibraryIdSet();
+        $this->checkStreamCollectionGuidSet();
+        return $this->APIcall('DELETE', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, [], false, true);
     }
 
     public function createCollection(string $new_collection_name): array
     {
-        if ($this->isStreamLibraryIdSet()) {
-            return $this->APIcall('POST', "library/{$this->stream_library_id}/collections", array("name" => $new_collection_name), false, true);
-        }
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/collections", array("name" => $new_collection_name), false, true);
     }
 
     public function listVideos(int $page = 1, int $items_pp = 100, string $order_by = 'date'): array
     {
-        if ($this->isStreamLibraryIdSet()) {
-            return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
-        }
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
     }
 
     public function listVideosForCollectionId(int $page = 1, int $items_pp = 100, string $order_by = 'date'): array
     {
-        if ($this->isStreamLibraryIdSet() && $this->isStreamCollectionGuidSet()) {
-            return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?collection={$this->stream_collection_guid}&page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
-        }
+        $this->checkStreamLibraryIdSet();
+        $this->checkStreamCollectionGuidSet();
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?collection={$this->stream_collection_guid}&page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
     }
 
-    public function getVideo(int $library_id, string $video_guid): array
+    public function getVideo(string $video_guid): array
     {
-        return $this->APIcall('GET', "library/$library_id/videos/$video_guid", [], false, true);
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
     }
 
-    public function deleteVideo(int $library_id, string $video_guid): array
+    public function deleteVideo(string $video_guid): array
     {
-        return $this->APIcall('DELETE', "library/$library_id/videos/$video_guid", [], false, true);
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('DELETE', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
     }
 
-    public function createVideo(int $library_id, string $video_title, string $collection_guid = ''): array
+    public function createVideo(string $video_title): array
     {
-        if (!empty($collection_guid)) {
-            return $this->APIcall('POST', "library/$library_id/videos?title=$video_title&collectionId=$collection_guid", [], false, true);
-        }
-        return $this->APIcall('POST', "library/$library_id/videos?title=$video_title", [], false, true);
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos", array("title" => $video_title), false, true);
     }
 
-    public function uploadVideo(int $library_id, string $video_guid, string $video_to_upload): array
+    public function createVideoForCollection(string $video_title): array
+    {
+        $this->checkStreamLibraryIdSet();
+        $this->checkStreamCollectionGuidSet();
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos", array("title" => $video_title, "collectionId" => $this->stream_collection_guid), false, true);
+    }
+
+    public function uploadVideo(string $video_guid, string $video_to_upload): array
     {
         //Need to use createVideo() first to get video guid
-        return $this->APIcall('PUT', "library/$library_id/videos/$video_guid", array('file' => $video_to_upload), false, true);
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('PUT', "library/{$this->stream_library_id}/videos/" . $video_guid, array('file' => $video_to_upload), false, true);
+
     }
 
-    public function setThumbnail(int $library_id, string $video_guid, string $thumbnail_url): array
+    public function setThumbnail(string $video_guid, string $thumbnail_url): array
     {
-        return $this->APIcall('POST', "library/$library_id/videos/$video_guid/thumbnail?$thumbnail_url", [], false, true);
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos/$video_guid/thumbnail?$thumbnail_url", [], false, true);
+
     }
 
-    public function addCaptions(int $library_id, string $video_guid, string $srclang, string $label, string $captions_file): array
+    public function addCaptions(string $video_guid, string $srclang, string $label, string $captions_file): array
     {
-        return $this->APIcall('POST', "library/$library_id/videos/$video_guid/captions/$srclang?label=$label&captionsFile=$captions_file", [], false, true);
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos/$video_guid/captions/$srclang?label=$label&captionsFile=$captions_file", [], false, true);
     }
 
-    public function deleteCaptions(int $library_id, string $video_guid, string $srclang): array
+    public function deleteCaptions(string $video_guid, string $srclang): array
     {
-        return $this->APIcall('DELETE', "library/$library_id/videos/$video_guid/captions/$srclang", [], false, true);
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('DELETE', "library/{$this->stream_library_id}/videos/$video_guid/captions/$srclang", [], false, true);
     }
 
     public function videoResolutionsArray(string $video_guid): array
     {
-        if ($this->isStreamLibraryIdSet()) {
-            $data = $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
-            return explode(",", $data['availableResolutions']);
-        }
+        $this->checkStreamLibraryIdSet();
+        $data = $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
+        return explode(",", $data['availableResolutions']);
     }
+
 
     public function videoSize(string $video_guid, string $size_type = 'MB', bool $format = false, float $decimals = 2): float
     {
-        if ($this->isStreamLibraryIdSet()) {
-            $data = $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
-            return $this->convertBytes($data['storageSize'], $size_type, $format, $decimals);
-        }
+        $this->checkStreamLibraryIdSet();
+        $data = $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
+        return $this->convertBytes($data['storageSize'], $size_type, $format, $decimals);
     }
 
-    private function isStreamLibraryIdSet(): bool
+    private function checkStreamLibraryIdSet(): void
     {
         try {
             if (!isset($this->stream_library_id)) {
                 throw new BunnyAPIException("You must set the stream library id first. Use setStreamLibraryId()");
-            } else {
-                return true;
             }
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
@@ -850,13 +856,11 @@ class BunnyAPI
         }
     }
 
-    private function isStreamCollectionGuidSet(): bool
+    private function checkStreamCollectionGuidSet(): void
     {
         try {
             if (!isset($this->stream_collection_guid)) {
                 throw new BunnyAPIException("You must set the stream collection guid first. Use setStreamCollectionGuid()");
-            } else {
-                return true;
             }
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
