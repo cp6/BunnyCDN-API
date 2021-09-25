@@ -23,8 +23,8 @@ class BunnyAPI
     private $connection;
     private array $data;
     private int $stream_library_id;
-    private string $stream_collection_guid = '';
-    private string $stream_video_guid = '';
+    private string $stream_collection_guid;
+    private string $stream_video_guid;
 
     public function __construct(int $execution_time = 240, bool $json_header = false)
     {
