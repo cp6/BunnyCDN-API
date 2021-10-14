@@ -1,17 +1,13 @@
 # BunnyCDN API Class
 
-<<<<<<< Updated upstream
-The most comprehensive, feature packed and easy to use PHP class for the BunnyCDN pull, video streaming and storage
-zones [API](https://bunnycdn.docs.apiary.io/).
-=======
 The most comprehensive, feature packed and easy to use PHP class for [bunny.net](https://bunny.net?ref=qxdxfxutxf) (
-BunnyCDN) pull zone, video streaming and storage zones [API](https://docs.bunny.net/reference/bunnynet-api-overview).
->>>>>>> Stashed changes
+BunnyCDN) pull, video streaming and storage zones [API](https://docs.bunny.net/reference/bunnynet-api-overview).
 
 This class whilst having a main focus on storage zone interaction includes pull zone features. Combining API with FTP,
 managing and using BunnyNet storage zones just got easier.
 
-[![Generic badge](https://img.shields.io/badge/version-1.5-blue.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/version-1.6-blue.svg)]()
+[![Generic badge](https://img.shields.io/badge/PHP-8-purple.svg)]()
 
 **Note video streaming API is seemingly not finalized and changes from time to time**
 
@@ -604,6 +600,8 @@ $bunny->closeConnection();
 
 ## Video streaming
 
+**You can only get the video library id from your bunny.net stream library page**
+
 Set video stream library id
 
 ```php
@@ -611,6 +609,16 @@ $bunny->setStreamLibraryId($library_id);
 ```
 
 `$library_id` stream library id `int`
+
+---
+
+Get video collections
+
+Requires ```setStreamLibraryId()``` to be set.
+
+```php
+$bunny->getVideoCollections();
+```
 
 ---
 
@@ -634,15 +642,13 @@ $bunny->setStreamVideoGuid($video_guid);
 
 ---
 
-Get video collections for library
+Get video collections for library id
+
+Requires ```setStreamLibraryId()``` to be set.
 
 ```php
-$bunny->getStreamCollections($library_id, $page, $items_pp,$order_by);
+$bunny->getStreamCollections($page, $items_pp,$order_by);
 ```
-
-`$library_id` library id `int`
-
-*0 = use set library id from setStreamLibraryId()*
 
 `$page` page number `int`
 
@@ -654,63 +660,55 @@ $bunny->getStreamCollections($library_id, $page, $items_pp,$order_by);
 
 Get streams for a collection
 
+Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()``` to be set.
+
 ```php
-$bunny->getStreamForCollection($library_id, $collection_guid);
+$bunny->getStreamForCollection();
 ```
-
-`$library_id` library id `int`
-
-*0 = use set library id from setStreamLibraryId()*
-
-`$collection_guid` video collection guid `string`
-
-*leave empty to use set collection guid from setStreamCollectionGuid()*
 
 ---
 
 Update stream collection
 
+Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()``` to be set.
+
 ```php
-$bunny->updateCollection($library_id, $collection_guid);
+$bunny->updateCollection($updated_collection_name);
 ```
 
-`$library_id` library id `int`
-
-`$collection_guid` video collection guid `string`
+`$updated_collection_name` the name to update video collection to `string`
 
 ---
 
 Delete stream collection
 
+Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()``` to be set.
+
 ```php
-$bunny->deleteCollection($library_id, $collection_guid);
+$bunny->deleteCollection();
 ```
-
-`$library_id` library id `int`
-
-`$collection_guid` video collection guid `string`
 
 ---
 
 Create stream collection
 
+Requires ```setStreamLibraryId()``` to be set.
+
 ```php
-$bunny->createCollection($library_id, $collection_guid);
+$bunny->createCollection($new_collection_name);
 ```
 
-`$library_id` library id `int`
-
-`$collection_guid` video collection guid `string`
+`$new_collection_name` the name for your new video collection `string`
 
 ---
 
 List videos for library
 
-```php
-$bunny->listVideos($library_id, $collection_guid);
-```
+Requires ```setStreamLibraryId()``` to be set.
 
-`$library_id` library id `int`
+```php
+$bunny->listVideos($collection_guid);
+```
 
 `$collection_guid` video collection guid `string`
 
@@ -718,11 +716,11 @@ $bunny->listVideos($library_id, $collection_guid);
 
 Get video information
 
-```php
-$bunny->getVideo($library_id, $collection_guid);
-```
+Requires ```setStreamLibraryId()``` to be set.
 
-`$library_id` library id `int`
+```php
+$bunny->getVideo($collection_guid);
+```
 
 `$collection_guid` video collection guid `string`
 
@@ -730,8 +728,10 @@ $bunny->getVideo($library_id, $collection_guid);
 
 Delete video
 
+Requires ```setStreamLibraryId()``` to be set.
+
 ```php
-$bunny->deleteVideo($library_id, $collection_guid);
+$bunny->deleteVideo($collection_guid);
 ```
 
 `$library_id` library id `int`
@@ -742,41 +742,52 @@ $bunny->deleteVideo($library_id, $collection_guid);
 
 Create video
 
-```php
-$bunny->createVideo($library_id, $video_title, $collection_guid);
-```
+Requires ```setStreamLibraryId()``` to be set.
 
-`$library_id` library id `int`
+```php
+$bunny->createVideo($video_title);
+```
 
 `$video_title` video title `string`
 
-`$collection_guid` video collection guid `string`
+
+---
+
+Create video for collection
+
+Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()```  to be set.
+
+```php
+$bunny->createVideoForCollection($video_title);
+```
+
+`$video_title` video title `string`
 
 ---
 
 Upload video
 
-Need to use createVideo() first to get video guid
+Requires ```setStreamLibraryId()``` to be set.
+
+Need to use ```createVideo()``` first to get video guid
 
 ```php
-$bunny->uploadVideo($library_id, $collection_guid, $video_to_upload);
+$bunny->uploadVideo($video_guid, $video_to_upload);
 ```
 
-`$library_id` library id `int`
+`$video_guid` video guid `string`
 
-`$collection_guid` video collection guid `string`
-
-`$video_to_upload` video file `string`
+`$video_to_upload` video filename `string`
 
 ---
 
 Set thumbnail for video
 
-```php
-$bunny->setThumbnail($library_id, $video_guid, $thumbnail_url);
-```
+Requires ```setStreamLibraryId()``` to be set.
 
-`$library_id` library id `int`
+```php
+$bunny->setThumbnail($video_guid, $thumbnail_url);
+```
 
 `$video_guid` video guid `string`
 
@@ -784,13 +795,33 @@ $bunny->setThumbnail($library_id, $video_guid, $thumbnail_url);
 
 ---
 
-Add captions
+Get video resolutions
+
+Requires ```setStreamLibraryId()``` to be set.
 
 ```php
-$bunny->addCaptions($library_id, $video_guid, $collection_guid, $label, $captions_file);
+$bunny->videoResolutionsArray($video_guid);
 ```
 
-`$library_id` library id `int`
+---
+
+Get video size
+
+Requires ```setStreamLibraryId()``` to be set.
+
+```php
+$bunny->videoSize($video_guid);
+```
+
+---
+
+Add captions
+
+Requires ```setStreamLibraryId()``` to be set.
+
+```php
+$bunny->addCaptions($video_guid, $collection_guid, $label, $captions_file);
+```
 
 `$video_guid` video guid `string`
 
@@ -804,18 +835,14 @@ $bunny->addCaptions($library_id, $video_guid, $collection_guid, $label, $caption
 
 Delete captions
 
+Requires ```setStreamLibraryId()``` to be set.
+
 ```php
 $bunny->deleteCaptions($library_id, $video_guid, $srclang);
 ```
-
-`$library_id` library id `int`
 
 `$video_guid` video guid `string`
 
 `$srclang` captions srclang `string`
 
 ---
-
-## TODO
-
-* Proper exception handling
