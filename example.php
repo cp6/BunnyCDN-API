@@ -109,3 +109,38 @@ echo $bunny->deleteFile('pets/puppy_fluffy/fluffy_young.jpg');//Deletes fluffy_y
 //Delete folders (only works if folder empty)
 echo $bunny->deleteFolder('pets/puppy_fluffy/');
 echo $bunny->deleteFolder('pets/');
+
+
+/*
+ *
+ * Video stream API examples
+ *
+ */
+
+//List collections for library 1234
+echo json_encode($bunny->getStreamCollections(1234));
+
+//List videos for library 1234 and collection 886gce58-1482-416f-b908-fca0b60f49ba
+$bunny->setStreamLibraryId(1234);
+$bunny->setStreamCollectionGuid('886gce58-1482-416f-b908-fca0b60f49ba');
+echo json_encode($bunny->listVideosForCollectionId());
+
+//List video information individually
+echo json_encode($bunny->getVideo(1234,'e6410005-d591-4a7e-a83d-6c1eef0fdc78'));
+
+//Get array of resolutions for video
+echo json_encode($bunny->videoResolutionsArray('e6410005-d591-4a7e-a83d-6c1eef0fdc78'));
+
+//Get size of video
+echo json_encode($bunny->videoSize('e6410005-d591-4a7e-a83d-6c1eef0fdc78', 'MB'));
+
+
+//Create a video (prepare for upload)
+echo json_encode($bunny->createVideo('title_for_the_video'));
+//OR In collection
+echo json_encode($bunny->createVideoForCollection('title_for_the_video'));
+//These return information for the video. Importantly the video guid
+
+//Upload the video file
+echo json_encode($bunny->uploadVideo('a6e8483a-7538-4eb1-bb1f-6c1eef0fdc78', 'test_video.mp4'));
+//Uploads test_video.mp4
