@@ -1,23 +1,28 @@
 # BunnyCDN API Class
 
+<<<<<<< Updated upstream
 The most comprehensive, feature packed and easy to use PHP class for the BunnyCDN pull, video streaming and storage
 zones [API](https://bunnycdn.docs.apiary.io/).
+=======
+The most comprehensive, feature packed and easy to use PHP class for [bunny.net](https://bunny.net?ref=qxdxfxutxf) (
+BunnyCDN) pull zone, video streaming and storage zones [API](https://docs.bunny.net/reference/bunnynet-api-overview).
+>>>>>>> Stashed changes
 
 This class whilst having a main focus on storage zone interaction includes pull zone features. Combining API with FTP,
-managing and using BunnyCDN storage zones just got easier.
+managing and using BunnyNet storage zones just got easier.
 
 [![Generic badge](https://img.shields.io/badge/version-1.5-blue.svg)](https://shields.io/)
 
-**Note video streaming API is seemingly not finalized and is changing**
+**Note video streaming API is seemingly not finalized and changes from time to time**
 
 ### Requires
 
-For Pull zone, billing and statistics API interaction you will need your BunnyCDN API key, this is found in your
+For Pull zone, billing and statistics API interaction you will need your BunnyNet API key, this is found in your
 dashboard in the My Account section.
 
 If you want to interact with storage zones you will need your BunnyCDN API key set and the name of the storage zone.
 
-```listStorageZones()``` returns all the storage zone data/info for the account.
+You can get this with ```listStorageZones()``` as it returns all the storage zone data/info for the account.
 
 ## Features & abilities
 
