@@ -6,12 +6,12 @@ BunnyCDN) pull, video streaming and storage zones [API](https://docs.bunny.net/r
 This class whilst having a main focus on storage zone interaction includes pull zone features. Combining API with FTP,
 managing and using BunnyNet storage zones just got easier.
 
-[![Generic badge](https://img.shields.io/badge/version-1.6-blue.svg)]()
+[![Generic badge](https://img.shields.io/badge/version-1.7-blue.svg)]()
 [![Generic badge](https://img.shields.io/badge/PHP-8-purple.svg)]()
 
 **Note video streaming API is seemingly not finalized and changes from time to time**
 
-### Requires
+### Requirements
 
 For Pull zone, billing and statistics API interaction you will need your BunnyNet API key, this is found in your
 dashboard in the My Account section.
@@ -64,7 +64,7 @@ You can get this with ```listStorageZones()``` as it returns all the storage zon
 
 ## Usage
 
-Usage is simple, install with:
+Install with composer:
 
 ```
 composer require corbpie/bunny-cdn-api
@@ -98,14 +98,6 @@ With ```apiKey()``` (needs setting with each calling of class)
 
 ```php
 $bunny->apiKey('XXXX-XXXX-XXXX');//Bunny api key
-```
-
----
-
-To have max execution time of 300 seconds
-
-```php
-$bunny = new bunnyAPI(300);
 ```
 
 ---
