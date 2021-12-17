@@ -556,9 +556,18 @@ class BunnyAPI
         foreach ($array as $value) {
             if ($value['IsDirectory'] === false) {
                 $file_name = $value['ObjectName'];
-                if (ftp_get($this->connection, $dl_into . "$file_name", $file_name, $mode)) {
+                if(file_exists($dl_into . "$file_name")){
+                    continue;
+                }
+                if (ftp_get($this->connection, $dl_into . "$file_name", "/$this->storage_name" . $dir_dl_from.$file_name, $mode)) {
                     $files_downloaded++;
                 }
+            }else{
+                if(!file_exists($dl_into.$value['ObjectName']."/")){
+                    mkdir($dl_into.$value['ObjectName']."/");
+                }
+                $returnArray = $this->downloadAll($dir_dl_from . $value['ObjectName']."/", $dl_into.$value['ObjectName']."/");
+                $files_downloaded += $returnArray['files_downloaded'];
             }
         }
         return array('action' => __FUNCTION__, 'files_downloaded' => $files_downloaded);
