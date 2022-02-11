@@ -26,7 +26,7 @@ class BunnyAPI
     private string $stream_collection_guid = '';
     private string $stream_video_guid = '';
 
-    public function __construct(bool $json_header = false)
+    public function __construct()
     {
         try {
             if (!$this->constApiKeySet()) {
@@ -36,9 +36,6 @@ class BunnyAPI
             }
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
-        }
-        if ($json_header) {
-            header('Content-Type: application/json');
         }
     }
 
