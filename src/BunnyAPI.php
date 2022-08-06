@@ -62,16 +62,15 @@ class BunnyAPI
         }
     }
 
-    protected function findStorageZoneAccessKey(string $storage_name): bool
+    protected function findStorageZoneAccessKey(string $storage_name): ?string
     {
         $data = $this->listStorageZones();
         foreach ($data as $zone) {
             if ($zone['Name'] === $storage_name) {
-                $this->access_key = $zone['Password'];
-                return true;//Found access key
+                return $this->access_key = $zone['Password'];
             }
         }
-        return false;//Never found access key for said storage zone
+        return null;//Never found access key for said storage zone
     }
 
     protected function constApiKeySet(): bool
