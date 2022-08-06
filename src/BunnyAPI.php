@@ -4,17 +4,12 @@ namespace Corbpie\BunnyCdn;
 
 use Corbpie\BunnyCdn\BunnyAPIException;
 
-/**
- * Bunny CDN pull & storage zone API class
- * @version  1.5
- * @author corbpie
- */
 class BunnyAPI
 {
     private const API_KEY = 'XXXX-XXXX-XXXX';//BunnyCDN API key
-    private const API_URL = 'https://bunnycdn.com/api/';//URL for BunnyCDN API
+    private const API_URL = 'https://api.bunny.net/';//URL for BunnyCDN API
     private const STORAGE_API_URL = 'https://storage.bunnycdn.com/';//URL for storage zone replication region (LA|NY|SG|SYD) Falkenstein is as default
-    private const VIDEO_STREAM_URL = 'http://video.bunnycdn.com/';//URL for Bunny video stream API
+    private const VIDEO_STREAM_URL = 'https://video.bunnycdn.com/';//URL for Bunny video stream API
     private const HOSTNAME = 'storage.bunnycdn.com';//FTP hostname
     private const STREAM_LIBRARY_ACCESS_KEY = 'XXXX-XXXX-XXXX';
     private string $api_key;
@@ -31,28 +26,26 @@ class BunnyAPI
         try {
             if (!$this->constApiKeySet()) {
                 throw new BunnyAPIException("You must provide an API key");
-            } else {
-                $this->api_key = self::API_KEY;
             }
+            $this->api_key = self::API_KEY;
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
         }
     }
 
-    public function apiKey(string $api_key = '')
+    public function apiKey(string $api_key = ''): void
     {
         try {
             if (!isset($api_key) || trim($api_key) === '') {
                 throw new BunnyAPIException('$api_key cannot be empty');
-            } else {
-                $this->api_key = $api_key;
             }
+            $this->api_key = $api_key;
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
         }
     }
 
-    public function zoneConnect(string $storage_name, string $access_key = '')
+    public function zoneConnect(string $storage_name, string $access_key = ''): void
     {
         $this->storage_name = $storage_name;
         (empty($access_key)) ? $this->findStorageZoneAccessKey($storage_name) : $this->access_key = $access_key;
@@ -61,10 +54,9 @@ class BunnyAPI
         ftp_pasv($conn_id, true);
         try {
             if (!$conn_id) {
-                throw new BunnyAPIException("Could not make FTP connection to " . (self::HOSTNAME) . "");
-            } else {
-                $this->connection = $conn_id;
+                throw new BunnyAPIException("Could not make FTP connection to " . (self::HOSTNAME));
             }
+            $this->connection = $conn_id;
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
         }
@@ -109,12 +101,12 @@ class BunnyAPI
             }
         } else {//GET
             if (!empty($params)) {
-                $url = sprintf("%s?%s", $url, http_build_query(json_encode($params)));
+                $url = sprintf("%s?%s", $url, http_build_query($params));
             }
         }
         if (!$storage_call && !$video_stream_call) {//General CDN pullzone
-            curl_setopt($curl, CURLOPT_URL, self::API_URL . (string)$url);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "AccessKey: $this->api_key"));
+            curl_setopt($curl, CURLOPT_URL, self::API_URL . $url);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array("Accept: application/json", "AccessKey: $this->api_key"));
         } elseif ($video_stream_call) {//Video stream
             curl_setopt($curl, CURLOPT_URL, self::VIDEO_STREAM_URL . (string)$url);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: " . self::STREAM_LIBRARY_ACCESS_KEY . ""));
@@ -124,6 +116,7 @@ class BunnyAPI
         }
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         $result = curl_exec($curl);
         $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
@@ -133,9 +126,9 @@ class BunnyAPI
         return array('http_code' => $responseCode);
     }
 
-    public function listPullZones(): array
+    public function listPullZones(int $page = 0, int $per_page = 100, bool $include_cert = true): array
     {
-        return $this->APIcall('GET', 'pullzone');
+        return $this->APIcall('GET', 'pullzone', ['page' => $page, 'perPage' => $per_page, 'includeCertificate' => $include_cert]);
     }
 
     public function getPullZone(int $id): array
