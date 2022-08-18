@@ -93,11 +93,16 @@ class BunnyAPI
             }
         } elseif ($method === "PUT") {//PUT request
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
-            curl_setopt($curl, CURLOPT_POST, 1);
-            curl_setopt($curl, CURLOPT_UPLOAD, 1);
-            $params = json_decode(json_encode($params));
-            curl_setopt($curl, CURLOPT_INFILE, fopen($params->file, 'rb'));
-            curl_setopt($curl, CURLOPT_INFILESIZE, filesize($params->file));
+            if ($url_type === 'STORAGE'){
+                $params = json_decode(json_encode($params));
+                curl_setopt($curl, CURLOPT_POST, 1);
+                curl_setopt($curl, CURLOPT_UPLOAD, 1);
+                curl_setopt($curl, CURLOPT_INFILE, fopen($params->file, 'rb'));
+                curl_setopt($curl, CURLOPT_INFILESIZE, filesize($params->file));
+            } else {
+                $data = json_encode($params);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+            }
         } elseif ($method === "DELETE") {//DELETE request
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
             if (!empty($params)) {
