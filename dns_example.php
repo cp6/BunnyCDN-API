@@ -14,6 +14,15 @@ $bunny->getDNSZone(1234);
 //Create a DNS zone with logging enable
 $bunny->addDNSZone('zonedomain.com',  true);
 
+//Create a DNS zone with parameters from https://docs.bunny.net/reference/dnszonepublic_add
+$parameters = array(
+    'Domain' => 'zonedomain.com', 'NameserversDetected' => true, 'CustomNameserversEnabled' => true,
+    'Nameserver1' => 'customns1.com', 'Nameserver2' => 'customns2.com', 'SoaEmail' => 'contact@zonedomain.com',
+    'DateModified' => '2022-08-18 23:59:59', 'DateCreated' => '2022-08-18 23:59:59', 'NameserversNextCheck' => '2022-08-28 23:59:59',
+    'LoggingEnabled' => true, 'LoggingIPAnonymizationEnabled' => true
+);
+$bunny->addDNSZoneFull($parameters);
+
 //Delete DNS zone (1234 is the DNS zone id)
 $bunny->deleteDNSZone(1234);
 
@@ -25,6 +34,10 @@ $bunny->updateDNSZoneNameservers(12345,  true, 'nameserverone.com', 'nameservert
 
 //Update DNS SOA email
 $bunny->updateDNSZoneSoaEmail(12345,   'mass_contact@mymail.com');
+
+//Add a DNS record by using parameters of choice https://docs.bunny.net/reference/dnszonepublic_addrecord
+$parameters = array('Type' => 0, 'Ttl' => 120, 'Accelerated' => true, 'Weight' => 200);
+$bunny->addDNSRecord(12345,   'thehost.com', '114.12.219.52', $parameters);
 
 //Add DNS A record
 $bunny->addDNSRecordA(12345,   'thehost.com', '199.99.99.99');

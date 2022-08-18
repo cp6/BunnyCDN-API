@@ -967,6 +967,11 @@ class BunnyAPI
         return $this->APIcall('GET', $url);
     }
 
+    public function addDNSZoneFull(array $parameters): array
+    {//Add DNS zone by building up parameters from https://docs.bunny.net/reference/dnszonepublic_add
+        return $this->APIcall('POST', "dnszone", $parameters);
+    }
+
     public function addDNSZone(string $domain, bool $logging = false, bool $log_ip_anon = true): array
     {
         $parameters = array(
@@ -999,6 +1004,18 @@ class BunnyAPI
     public function deleteDNSZone(int $zone_id): array
     {
         return $this->APIcall('DELETE', "dnszone/$zone_id");
+    }
+
+    public function addDNSRecord(int $zone_id, string $name, string $value, array $parameters = array()): array
+    {//Add DNS record by building up parameters from https://docs.bunny.net/reference/dnszonepublic_addrecord
+        $parameters = array_merge(
+            array(
+                'Name' => $name,
+                'Value' => $value,
+            ),
+            $parameters
+        );
+        return $this->APIcall('PUT', "dnszone/$zone_id/records", $parameters);
     }
 
     public function addDNSRecordA(int $zone_id, string $hostname, string $ipv4, int $ttl = 300, int $weight = 100): array
