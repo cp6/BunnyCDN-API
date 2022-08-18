@@ -1,15 +1,44 @@
 # BunnyCDN API Class
 
 The most comprehensive, feature packed and easy to use PHP class for [bunny.net](https://bunny.net?ref=qxdxfxutxf) (
-BunnyCDN) pull, video streaming and storage zones [API](https://docs.bunny.net/reference/bunnynet-api-overview).
+BunnyCDN) pull, video streaming, DNS and storage zones [API](https://docs.bunny.net/reference/bunnynet-api-overview).
 
 This class whilst having a main focus on storage zone interaction includes pull zone features. Combining API with FTP,
 managing and using BunnyNet storage zones just got easier.
 
-[![Generic badge](https://img.shields.io/badge/version-1.7-blue.svg)]()
-[![Generic badge](https://img.shields.io/badge/PHP-8-purple.svg)]()
+[![Generic badge](https://img.shields.io/badge/version-1.8-blue.svg)]()
+[![Generic badge](https://img.shields.io/badge/PHP-8.1-purple.svg)]()
 
-**Note video streaming API is seemingly not finalized and changes from time to time**
+### 1.8 changes
+* Added DNS zone interaction
+* Added `dns_example.php` file
+* Added getStreamCollectionSize function
+* Added getVideoStatistics function
+* Added getVideoHeatmap function
+* Added reEncodeVideo function
+* Added fetchVideo function
+* Added getCountries function
+* Added getRegions function
+* Added getAbuseCases function
+* Added checkAbuseCase function
+* Added getSupportTickets function
+* Added getSupportTicketDetails function
+* Added closeSupportTicket function
+* Added createSupportTicket function
+* Updated APIcall function (bool $storage_call replaced with string $url_type)
+* Updated functions that use APIcall to use new $url_type parameter
+* Updated listPullZones function
+* Updated getStatistics function
+* Updated findStorageZoneAccessKey function return type
+* Updated getVideoCollections function
+* Updated API_URL and VIDEO_STREAM_URL const strings
+* Removed boolToInt function
+* Removed jsonHeader function
+
+### TODO
+* Sort (features) and index the readme
+* Create separate example files for each (pull, storage, video/stream and DNS)
+* Create separate classes and src files for each (pull, storage, video/stream and DNS)
 
 ### Requirements
 
