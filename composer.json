@@ -1,6 +1,6 @@
 {
   "name": "corbpie/bunny-cdn-api",
-  "description": "Bunny CDN API class for handling pull and storage zones plus video streaming.",
+  "description": "Bunny net CDN API class for handling pull zones, video streaming, DNS and storage zones.",
   "type": "library",
   "license": "MIT",
   "minimum-stability": "stable",

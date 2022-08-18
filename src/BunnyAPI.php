@@ -4,17 +4,12 @@ namespace Corbpie\BunnyCdn;
 
 use Corbpie\BunnyCdn\BunnyAPIException;
 
-/**
- * Bunny CDN pull & storage zone API class
- * @version  1.5
- * @author corbpie
- */
 class BunnyAPI
 {
     private const API_KEY = 'XXXX-XXXX-XXXX';//BunnyCDN API key
-    private const API_URL = 'https://bunnycdn.com/api/';//URL for BunnyCDN API
+    private const API_URL = 'https://api.bunny.net/';//URL for BunnyCDN API
     private const STORAGE_API_URL = 'https://storage.bunnycdn.com/';//URL for storage zone replication region (LA|NY|SG|SYD) Falkenstein is as default
-    private const VIDEO_STREAM_URL = 'http://video.bunnycdn.com/';//URL for Bunny video stream API
+    private const VIDEO_STREAM_URL = 'https://video.bunnycdn.com/';//URL for Bunny video stream API
     private const HOSTNAME = 'storage.bunnycdn.com';//FTP hostname
     private const STREAM_LIBRARY_ACCESS_KEY = 'XXXX-XXXX-XXXX';
     private string $api_key;
@@ -31,28 +26,26 @@ class BunnyAPI
         try {
             if (!$this->constApiKeySet()) {
                 throw new BunnyAPIException("You must provide an API key");
-            } else {
-                $this->api_key = self::API_KEY;
             }
+            $this->api_key = self::API_KEY;
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
         }
     }
 
-    public function apiKey(string $api_key = '')
+    public function apiKey(string $api_key = ''): void
     {
         try {
             if (!isset($api_key) || trim($api_key) === '') {
                 throw new BunnyAPIException('$api_key cannot be empty');
-            } else {
-                $this->api_key = $api_key;
             }
+            $this->api_key = $api_key;
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
         }
     }
 
-    public function zoneConnect(string $storage_name, string $access_key = '')
+    public function zoneConnect(string $storage_name, string $access_key = ''): void
     {
         $this->storage_name = $storage_name;
         (empty($access_key)) ? $this->findStorageZoneAccessKey($storage_name) : $this->access_key = $access_key;
@@ -61,25 +54,23 @@ class BunnyAPI
         ftp_pasv($conn_id, true);
         try {
             if (!$conn_id) {
-                throw new BunnyAPIException("Could not make FTP connection to " . (self::HOSTNAME) . "");
-            } else {
-                $this->connection = $conn_id;
+                throw new BunnyAPIException("Could not make FTP connection to " . (self::HOSTNAME));
             }
+            $this->connection = $conn_id;
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
         }
     }
 
-    protected function findStorageZoneAccessKey(string $storage_name): bool
+    protected function findStorageZoneAccessKey(string $storage_name): ?string
     {
         $data = $this->listStorageZones();
         foreach ($data as $zone) {
             if ($zone['Name'] === $storage_name) {
-                $this->access_key = $zone['Password'];
-                return true;//Found access key
+                return $this->access_key = $zone['Password'];
             }
         }
-        return false;//Never found access key for said storage zone
+        return null;//Never found access key for said storage zone
     }
 
     protected function constApiKeySet(): bool
@@ -87,43 +78,53 @@ class BunnyAPI
         return !(!defined("self::API_KEY") || empty(self::API_KEY));
     }
 
-    private function APIcall(string $method, string $url, array $params = [], bool $storage_call = false, bool $video_stream_call = false): array
+    private function APIcall(string $method, string $url, array $params = [], string $url_type = 'BASE'): array
     {
         $curl = curl_init();
-        if ($method === "POST") {
+        if ($method === "GET") {//GET request
+            if (!empty($params)) {
+                $url = sprintf("%s?%s", $url, http_build_query($params));
+            }
+        } elseif ($method === "POST") {//POST request
             curl_setopt($curl, CURLOPT_POST, 1);
             if (!empty($params)) {
-                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
+                $data = json_encode($params);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
             }
-        } elseif ($method === "PUT") {
+        } elseif ($method === "PUT") {//PUT request
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
-            curl_setopt($curl, CURLOPT_POST, 1);
-            curl_setopt($curl, CURLOPT_UPLOAD, 1);
-            $params = json_decode(json_encode($params));
-            curl_setopt($curl, CURLOPT_INFILE, fopen($params->file, "r"));
-            curl_setopt($curl, CURLOPT_INFILESIZE, filesize($params->file));
-        } elseif ($method === "DELETE") {
+            if ($url_type === 'STORAGE'){
+                $params = json_decode(json_encode($params));
+                curl_setopt($curl, CURLOPT_POST, 1);
+                curl_setopt($curl, CURLOPT_UPLOAD, 1);
+                curl_setopt($curl, CURLOPT_INFILE, fopen($params->file, 'rb'));
+                curl_setopt($curl, CURLOPT_INFILESIZE, filesize($params->file));
+            } else {
+                $data = json_encode($params);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+            }
+        } elseif ($method === "DELETE") {//DELETE request
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
             if (!empty($params)) {
                 curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
             }
-        } else {//GET
-            if (!empty($params)) {
-                $url = sprintf("%s?%s", $url, http_build_query(json_encode($params)));
-            }
         }
-        if (!$storage_call && !$video_stream_call) {//General CDN pullzone
-            curl_setopt($curl, CURLOPT_URL, self::API_URL . (string)$url);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "AccessKey: $this->api_key"));
-        } elseif ($video_stream_call) {//Video stream
-            curl_setopt($curl, CURLOPT_URL, self::VIDEO_STREAM_URL . (string)$url);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: " . self::STREAM_LIBRARY_ACCESS_KEY . ""));
-        } else {//Storage zone
-            curl_setopt($curl, CURLOPT_URL, self::STORAGE_API_URL . (string)$url);
+
+        if ($url_type === 'BASE') {//General CDN
+            curl_setopt($curl, CURLOPT_URL, self::API_URL . $url);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array("Accept: application/json", "AccessKey: $this->api_key", "Content-Type: application/json"));
+        } elseif ($url_type === 'STORAGE') {//Storage zone
+            curl_setopt($curl, CURLOPT_URL, self::STORAGE_API_URL . $url);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: $this->access_key"));
+        } else {//Video stream
+            curl_setopt($curl, CURLOPT_URL, self::VIDEO_STREAM_URL . $url);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: " . self::STREAM_LIBRARY_ACCESS_KEY, "Content-Type: application/*+json"));
         }
+
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);//Need this (Bunny net issue??)
+
         $result = curl_exec($curl);
         $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
@@ -133,9 +134,9 @@ class BunnyAPI
         return array('http_code' => $responseCode);
     }
 
-    public function listPullZones(): array
+    public function listPullZones(int $page = 0, int $per_page = 100, bool $include_cert = true): array
     {
-        return $this->APIcall('GET', 'pullzone');
+        return $this->APIcall('GET', 'pullzone', ['page' => $page, 'perPage' => $per_page, 'includeCertificate' => $include_cert]);
     }
 
     public function getPullZone(int $id): array
@@ -216,7 +217,7 @@ class BunnyAPI
         return $this->APIcall('POST', "pullzone/$id/setForceSSL", array("Hostname" => $hostname, 'ForceSSL' => $force_ssl));
     }
 
-    public function listBlockedIpPullZone(int $id): ?array
+    public function listBlockedIpPullZone(int $id): array
     {
         $data = $this->pullZoneData($id);
         if (isset($data['BlockedIps'])) {
@@ -230,7 +231,7 @@ class BunnyAPI
                 'ips' => $ip_arr
             );
         }
-        return array('blocked_ip_count' => 0);
+        return array('blocked_ip_count' => 0, 'ips' => []);
     }
 
     public function resetTokenKey(int $id): array
@@ -240,12 +241,12 @@ class BunnyAPI
 
     public function addBlockedIpPullZone(int $id, string $ip): array
     {
-        return $this->APIcall('POST', 'pullzone/addBlockedIp', array("PullZoneId" => $id, "BlockedIp" => $ip));
+        return $this->APIcall('POST', "pullzone/$id/addBlockedIp", array("BlockedIp" => $ip));
     }
 
     public function unBlockedIpPullZone(int $id, string $ip): array
     {
-        return $this->APIcall('POST', 'pullzone/removeBlockedIp', array("PullZoneId" => $id, "BlockedIp" => $ip));
+        return $this->APIcall('POST', "pullzone/$id/removeBlockedIp", array("BlockedIp" => $ip));
     }
 
     public function addAllowedReferrer(int $id, string $hostname): array
@@ -282,20 +283,20 @@ class BunnyAPI
         $linetoline = explode("\n", $result);
         $line = array();
         foreach ($linetoline as $v1) {
-            if (isset($v1) && strlen($v1) > 0) {
+            if (isset($v1) && $v1 !== '') {
                 $log_format = explode('|', $v1);
                 $details = array(
                     'cache_result' => $log_format[0],
-                    'status' => intval($log_format[1]),
+                    'status' => (int)$log_format[1],
                     'datetime' => date('Y-m-d H:i:s', round($log_format[2] / 1000, 0)),
-                    'bytes' => intval($log_format[3]),
+                    'bytes' => (int)$log_format[3],
                     'ip' => $log_format[5],
                     'referer' => $log_format[6],
                     'file_url' => $log_format[7],
                     'user_agent' => $log_format[9],
                     'request_id' => $log_format[10],
                     'cdn_dc' => $log_format[8],
-                    'zone_id' => intval($log_format[4]),
+                    'zone_id' => (int)$log_format[4],
                     'country_code' => $log_format[11]
                 );
                 $line[] = $details;
@@ -341,9 +342,9 @@ class BunnyAPI
         return $value;
     }
 
-    public function getStatistics(): array
+    public function getStatistics(int $pullzone_id = -1, int $serverzone_id = -1, bool $hourly = false): array
     {
-        return $this->APIcall('GET', 'statistics');
+        return $this->APIcall('GET', 'statistics', ['pullZone' => $pullzone_id, 'serverZoneId' => $serverzone_id, 'hourly' => $hourly]);
     }
 
     public function getBilling(): array
@@ -351,12 +352,22 @@ class BunnyAPI
         return $this->APIcall('GET', 'billing');
     }
 
-    public function balance(): array
+    public function getAffiliate(): array
+    {
+        return $this->APIcall('GET', 'billing/affiliate');
+    }
+
+    public function claimAffiliate(): array
+    {
+        return $this->APIcall('POST', 'billing/affiliate/claim');
+    }
+
+    public function balance(): float
     {
         return $this->getBilling()['Balance'];
     }
 
-    public function monthCharges(): array
+    public function monthCharges(): float
     {
         return $this->getBilling()['ThisMonthCharges'];
     }
@@ -387,19 +398,67 @@ class BunnyAPI
         return $this->APIcall('POST', 'applycode', array("couponCode" => $code));
     }
 
+    public function getCountries(): array
+    {
+        return $this->APIcall('GET', 'country');
+    }
+
+    public function getRegions(): array
+    {
+        return $this->APIcall('GET', 'region');
+    }
+
+    public function getAbuseCases(): array
+    {
+        return $this->APIcall('GET', 'abusecase');
+    }
+
+    public function checkAbuseCase(int $id): array
+    {
+        return $this->APIcall('POST', "abusecase/$id/check");
+    }
+
+    public function getSupportTickets(): array
+    {
+        return $this->APIcall('GET', 'support/ticket/list');
+    }
+
+    public function getSupportTicketDetails(int $id): array
+    {
+        return $this->APIcall('GET', "support/ticket/details/$id");
+    }
+
+    public function closeSupportTicket(int $id): array
+    {
+        return $this->APIcall('POST', "support/ticket/close/$id");
+    }
+
+    public function createSupportTicket(string $subject, int $pullzone_id, int $storagezone_id, string $message): array
+    {
+        return $this->APIcall('POST', "support/ticket/create", ['Subject' => $subject, 'LinkedPullZone' => $pullzone_id, 'LinkedStorageZone' => $storagezone_id, 'Message' => $message]);
+    }
+
     public function uploadFileHTTP(string $file, string $save_as = 'folder/filename.jpg'): void
     {
-        $this->APIcall('PUT', $this->storage_name . "/" . $save_as, array('file' => $file), true);
+        $this->APIcall('PUT', $this->storage_name . "/" . $save_as, array('file' => $file), 'STORAGE');
     }
 
     public function deleteFileHTTP(string $file): void
     {
-        $this->APIcall('DELETE', $this->storage_name . "/" . $file, array(), true);
+        $this->APIcall('DELETE', $this->storage_name . "/" . $file, array(), 'STORAGE');
     }
 
     public function downloadFileHTTP(string $file): void
     {
-        $this->APIcall('GET', $this->storage_name . "/" . $file, array(), true);
+        $this->APIcall('GET', $this->storage_name . "/" . $file, array(), 'STORAGE');
+    }
+
+    public function folderExists(string $path): bool
+    {
+        if (!ftp_nlist($this->connection, $path)) {
+            return false;
+        }
+        return true;
     }
 
     public function createFolder(string $name): array
@@ -584,19 +643,6 @@ class BunnyAPI
         fclose($out);
     }
 
-    public function boolToInt(bool $bool): int
-    {
-        if ($bool) {
-            return 1;
-        }
-        return 0;
-    }
-
-    public function jsonHeader(): void
-    {
-        header('Content-Type: application/json');
-    }
-
     public function listAllOG(): array
     {
         return json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name/?AccessKey=" . $this->access_key), true);
@@ -723,115 +769,148 @@ class BunnyAPI
         $this->stream_video_guid = $video_guid;
     }
 
-    public function getVideoCollections(): array
+    public function getVideoCollections(int $page = 1, int $items_per_page = 100): array
     {
-        return $this->APIcall('GET', "library/{$this->stream_library_id}/collections", [], false, true);
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/collections", ['page' => $page, 'itemsPerPage' => $items_per_page], 'STREAM');
     }
 
     public function getStreamCollections(int $page = 1, int $items_pp = 100, string $order_by = 'date'): array
     {
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('GET', "library/{$this->stream_library_id}/collections?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/collections?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], 'STREAM');
     }
 
     public function getStreamForCollection(): array
     {
         $this->checkStreamLibraryIdSet();
         $this->checkStreamCollectionGuidSet();
-        return $this->APIcall('GET', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, [], false, true);
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, [], 'STREAM');
+    }
+
+    public function getStreamCollectionSize(): int
+    {
+        $this->checkStreamLibraryIdSet();
+        $this->checkStreamCollectionGuidSet();
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, [], 'STREAM')['totalSize'];
     }
 
     public function updateCollection(string $updated_collection_name): array
     {
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('POST', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, array("name" => $updated_collection_name), false, true);
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, array("name" => $updated_collection_name), 'STREAM');
     }
 
     public function deleteCollection(): array
     {
         $this->checkStreamLibraryIdSet();
         $this->checkStreamCollectionGuidSet();
-        return $this->APIcall('DELETE', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, [], false, true);
+        return $this->APIcall('DELETE', "library/{$this->stream_library_id}/collections/" . $this->stream_collection_guid, [], 'STREAM');
     }
 
     public function createCollection(string $new_collection_name): array
     {
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('POST', "library/{$this->stream_library_id}/collections", array("name" => $new_collection_name), false, true);
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/collections", array("name" => $new_collection_name), 'STREAM');
     }
 
     public function listVideos(int $page = 1, int $items_pp = 100, string $order_by = 'date'): array
     {
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], 'STREAM');
     }
 
     public function listVideosForCollectionId(int $page = 1, int $items_pp = 100, string $order_by = 'date'): array
     {
         $this->checkStreamLibraryIdSet();
         $this->checkStreamCollectionGuidSet();
-        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?collection={$this->stream_collection_guid}&page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], false, true);
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos?collection={$this->stream_collection_guid}&page=$page&itemsPerPage=$items_pp&orderBy=$order_by", [], 'STREAM');
+    }
+
+    public function getVideoStatistics(): array
+    {
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/statistics", [], 'STREAM');
+    }
+
+    public function getVideoHeatmap(string $video_guid): array
+    {
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid/heatmap", [], 'STREAM');
     }
 
     public function getVideo(string $video_guid): array
     {
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
+        return $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], 'STREAM');
     }
 
     public function deleteVideo(string $video_guid): array
     {
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('DELETE', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
+        return $this->APIcall('DELETE', "library/{$this->stream_library_id}/videos/$video_guid", [], 'STREAM');
     }
 
     public function createVideo(string $video_title): array
-    {
+    {//Returns array containing a GUID which is needed to PUT the video file
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos", array("title" => $video_title), false, true);
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos", array("title" => $video_title), 'STREAM');
     }
 
     public function createVideoForCollection(string $video_title): array
-    {
+    {//Returns array containing a GUID which is needed to PUT the video file
         $this->checkStreamLibraryIdSet();
         $this->checkStreamCollectionGuidSet();
-        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos", array("title" => $video_title, "collectionId" => $this->stream_collection_guid), false, true);
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos", array("title" => $video_title, "collectionId" => $this->stream_collection_guid), 'STREAM');
     }
 
     public function uploadVideo(string $video_guid, string $video_to_upload): array
     {
         //Need to use createVideo() first to get video guid
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('PUT', "library/{$this->stream_library_id}/videos/" . $video_guid, array('file' => $video_to_upload), false, true);
+        return $this->APIcall('PUT', "library/{$this->stream_library_id}/videos/" . $video_guid, array('file' => $video_to_upload), 'STREAM');
 
     }
 
     public function setThumbnail(string $video_guid, string $thumbnail_url): array
     {
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos/$video_guid/thumbnail?$thumbnail_url", [], false, true);
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos/$video_guid/thumbnail?$thumbnail_url", [], 'STREAM');
 
     }
 
     public function addCaptions(string $video_guid, string $srclang, string $label, string $captions_file): array
     {
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos/$video_guid/captions/$srclang?label=$label&captionsFile=$captions_file", [], false, true);
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos/$video_guid/captions/$srclang?label=$label&captionsFile=$captions_file", [], 'STREAM');
+    }
+
+    public function reEncodeVideo(string $video_guid): array
+    {
+        $this->checkStreamLibraryIdSet();
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos/$video_guid/reencode", [], 'STREAM');
+
+    }
+
+    public function fetchVideo(string $video_url, string $collection_id = null): array
+    {//Downloads a video from a URL into stream library/collection
+        $this->checkStreamLibraryIdSet();
+        (!is_null($collection_id)) ? $append = "?collectionId=$collection_id" : $append = "";
+        return $this->APIcall('POST', "library/{$this->stream_library_id}/videos/fetch{$append}", ['url' => $video_url], 'STREAM');
+
     }
 
     public function deleteCaptions(string $video_guid, string $srclang): array
     {
         $this->checkStreamLibraryIdSet();
-        return $this->APIcall('DELETE', "library/{$this->stream_library_id}/videos/$video_guid/captions/$srclang", [], false, true);
+        return $this->APIcall('DELETE', "library/{$this->stream_library_id}/videos/$video_guid/captions/$srclang", [], 'STREAM');
     }
 
     public function videoResolutionsArray(string $video_guid): array
     {
         $this->checkStreamLibraryIdSet();
-        $data = $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], false, true);
+        $data = $this->APIcall('GET', "library/{$this->stream_library_id}/videos/$video_guid", [], 'STREAM');
         return explode(",", $data['availableResolutions']);
     }
-
 
     public function videoSize(string $video_guid, string $size_type = 'MB', bool $format = false, float $decimals = 2): float
     {
@@ -862,6 +941,164 @@ class BunnyAPI
             echo $e->errorMessage();
             exit;
         }
+    }
+
+    //Bunny DNS
+    public function getDNSZones(int $page = 1, int $per_page = 1000): array
+    {
+        return $this->APIcall('GET', "dnszone?page=$page&perPage=$per_page");
+    }
+
+    public function getDNSZone(int $zone_id): array
+    {
+        return $this->APIcall('GET', "dnszone/$zone_id");
+    }
+
+    public function getDNSZoneStatistics(int $zone_id, $date_from = null, $date_to = null): array
+    {
+        $url = "dnszone/$zone_id/statistics";
+        if (!is_null($date_from) && is_null($date_to)) {
+            $url .= "?dateFrom=$date_from";
+        } else if (!is_null($date_to) && is_null($date_from)) {
+            $url .= "?dateTo=$date_to";
+        } elseif (!is_null($date_to) && !is_null($date_from)) {
+            $url .= "?dateFrom=$date_from&dateTo=$date_to";
+        }
+        return $this->APIcall('GET', $url);
+    }
+
+    public function addDNSZone(string $domain, bool $logging = false, bool $log_ip_anon = true): array
+    {
+        $parameters = array(
+            "Domain" => $domain, "LoggingEnabled" => $logging, "LoggingIPAnonymizationEnabled" => $log_ip_anon
+        );
+        return $this->APIcall('POST', "dnszone", $parameters);
+    }
+
+    public function updateDNSZoneNameservers(int $zone_id, bool $custom_ns, string $ns_one = '', string $ns_two = ''): array
+    {
+        $parameters = array(
+            "CustomNameserversEnabled" => $custom_ns, "Nameserver1" => $ns_one, "Nameserver2" => $ns_two
+        );
+        return $this->APIcall('POST', "dnszone/$zone_id", $parameters);
+    }
+
+    public function updateDNSZoneLogging(int $zone_id, bool $enable_logging, int $log_anon_type, bool $use_log_anon): array
+    {
+        $parameters = array(
+            "LoggingEnabled" => $enable_logging, "LogAnonymizationType" => $log_anon_type, "LoggingIPAnonymizationEnabled" => $use_log_anon
+        );
+        return $this->APIcall('POST', "dnszone/$zone_id", $parameters);
+    }
+
+    public function updateDNSZoneSoaEmail(int $zone_id, string $soa_email): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id", array("SoaEmail" => $soa_email));
+    }
+
+    public function deleteDNSZone(int $zone_id): array
+    {
+        return $this->APIcall('DELETE', "dnszone/$zone_id");
+    }
+
+    public function addDNSRecordA(int $zone_id, string $hostname, string $ipv4, int $ttl = 300, int $weight = 100): array
+    {
+        return $this->APIcall('PUT', "dnszone/$zone_id/records", array("Type" => 0, "Value" => $ipv4, "Name" => $hostname, "Ttl" => $ttl, "Weight" => $weight));
+    }
+
+    public function addDNSRecordAAAA(int $zone_id, string $hostname, string $ipv6, int $ttl = 300, int $weight = 100): array
+    {
+        return $this->APIcall('PUT', "dnszone/$zone_id/records", array("Type" => 1, "Value" => $ipv6, "Name" => $hostname, "Ttl" => $ttl, "Weight" => $weight));
+    }
+
+    public function addDNSRecordCNAME(int $zone_id, string $hostname, string $target, int $ttl = 300, int $weight = 100): array
+    {
+        return $this->APIcall('PUT', "dnszone/$zone_id/records", array("Type" => 2, "Value" => $target, "Name" => $hostname, "Ttl" => $ttl, "Weight" => $weight));
+    }
+
+    public function addDNSRecordMX(int $zone_id, string $hostname, string $mail_server, int $priority = 2000, int $ttl = 300, int $weight = 100): array
+    {
+        return $this->APIcall('PUT', "dnszone/$zone_id/records", array("Type" => 4, "Value" => $mail_server, "Name" => $hostname, "Priority" => $priority, "Ttl" => $ttl, "Weight" => $weight));
+    }
+
+    public function addDNSRecordTXT(int $zone_id, string $hostname, string $content, int $ttl = 300, int $weight = 100): array
+    {
+        return $this->APIcall('PUT', "dnszone/$zone_id/records", array("Type" => 3, "Value" => $content, "Name" => $hostname, "Ttl" => $ttl, "Weight" => $weight));
+    }
+
+    public function addDNSRecordNS(int $zone_id, string $hostname, string $target, int $ttl = 300, int $weight = 100): array
+    {
+        return $this->APIcall('PUT', "dnszone/$zone_id/records", array("Type" => 12, "Value" => $target, "Name" => $hostname, "Ttl" => $ttl, "Weight" => $weight));
+    }
+
+    public function addDNSRecordRedirect(int $zone_id, string $hostname, string $url, int $ttl = 300, int $weight = 100): array
+    {
+        return $this->APIcall('PUT', "dnszone/$zone_id/records", array("Type" => 5, "Value" => $url, "Name" => $hostname, "Ttl" => $ttl, "Weight" => $weight));
+    }
+
+    public function addDNSRecordPullZone(int $zone_id, string $hostname, int $pullzone_id, int $ttl = 300, int $weight = 100): array
+    {
+        return $this->APIcall('PUT', "dnszone/$zone_id/records", array("Type" => 7, "PullZoneId" => $pullzone_id, "Name" => $hostname, "Ttl" => $ttl, "Weight" => $weight));
+    }
+
+    public function addDNSRecordScript(int $zone_id, string $hostname, int $script_id, int $ttl = 300, int $weight = 100): array
+    {
+        return $this->APIcall('PUT', "dnszone/$zone_id/records", array("Type" => 11, "ScriptId" => $script_id, "Name" => $hostname, "Ttl" => $ttl, "Weight" => $weight));
+    }
+
+    public function updateDNSRecordA(int $zone_id, int $dns_id, string $hostname, string $ipv4): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id/records/$dns_id", array("Type" => 0, "Value" => $ipv4, "Name" => $hostname));
+    }
+
+    public function updateDNSRecordAAAA(int $zone_id, int $dns_id, string $hostname, string $ipv6): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id/records/$dns_id", array("Type" => 1, "Value" => $ipv6, "Name" => $hostname));
+    }
+
+    public function updateDNSRecordCNAME(int $zone_id, int $dns_id, string $hostname, string $target): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id/records/$dns_id", array("Type" => 2, "Value" => $target, "Name" => $hostname));
+    }
+
+    public function updateDNSRecordMX(int $zone_id, int $dns_id, string $hostname, string $mail_server, int $priority = 2000): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id/records/$dns_id", array("Type" => 4, "Value" => $mail_server, "Priority" => $priority, "Name" => $hostname));
+    }
+
+    public function updateDNSRecordTXT(int $zone_id, int $dns_id, string $hostname, string $content): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id/records/$dns_id", array("Type" => 3, "Value" => $content, "Name" => $hostname));
+    }
+
+    public function updateDNSRecordNS(int $zone_id, int $dns_id, string $hostname, string $target): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id/records/$dns_id", array("Type" => 12, "Value" => $target, "Name" => $hostname));
+    }
+
+    public function disableDNSRecord(int $zone_id, int $dns_id): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id/records/$dns_id", array("Disabled" => true));
+    }
+
+    public function enableDNSRecord(int $zone_id, int $dns_id): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id/records/$dns_id", array("Disabled" => false));
+    }
+
+    public function deleteDNSRecord(int $zone_id, int $dns_id): array
+    {
+        return $this->APIcall('DELETE', "dnszone/$zone_id/records/$dns_id");
+    }
+
+    public function recheckDNSRecord(int $zone_id): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id/recheckdns");
+    }
+
+    public function dismissDNSConfigNotice(int $zone_id): array
+    {
+        return $this->APIcall('POST', "dnszone/$zone_id/dismissnameservercheck");
     }
 
 }
