@@ -12,16 +12,13 @@ $bunny->getDNSZones();
 $bunny->getDNSZone(1234);
 
 //Create a DNS zone with logging enable
-$bunny->addDNSZone('zonedomain.net',  true);
+$bunny->addDNSZone('zonedomain.com',  true);
 
 //Delete DNS zone (1234 is the DNS zone id)
 $bunny->deleteDNSZone(1234);
 
 //Returns DNS zone statistics
 $bunny->getDNSZoneStatistics(1234);
-
-//Add DNS zone (with logging and anonymous logging)
-$bunny->addDNSZone('mydomainname.com',  true, true);
 
 //Update DNS nameservers
 $bunny->updateDNSZoneNameservers(12345,  true, 'nameserverone.com', 'nameservertwo.com');
