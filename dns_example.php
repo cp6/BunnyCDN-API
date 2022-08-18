@@ -51,7 +51,7 @@ $bunny->addDNSRecordRedirect(12345,   'thehost.com', 'theurl.com');
 $bunny->updateDNSRecordA(12345,   9876,'diffdomain.com', '162.55.44.12');
 
 //Update DNS AAAA record (9876 is the DNS record id)
-$bunny->updateDNSRecordA(12345,   9876,'thehost.com', '12001:0db8:85a3:0000:0000:8a2e:0370:6225');
+$bunny->updateDNSRecordAAAA(12345,   9876,'thehost.com', '12001:0db8:85a3:0000:0000:8a2e:0370:6225');
 
 //Disable a DNS record
 $bunny->disableDNSRecord(12345,   9876);
