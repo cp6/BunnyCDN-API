@@ -1,9 +1,9 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
-use Corbpie\BunnyCdn\BunnyAPI;
+use Corbpie\BunnyCdn\BunnyAPIDNS;
 
-$bunny = new BunnyAPI();
+$bunny = new BunnyAPIDNS();
 
 //Returns all DNS zones
 $bunny->getDNSZones();

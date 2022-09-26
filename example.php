@@ -1,9 +1,9 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
-use Corbpie\BunnyCdn\BunnyAPI;
+use Corbpie\BunnyCdn\BunnyAPIPull;
 
-$bunny = new BunnyAPI();
+$bunny = new BunnyAPIPull();
 //Make sure API_KEY is set at line 9 bunnyAPI.php
 
 /*
@@ -12,13 +12,13 @@ $bunny = new BunnyAPI();
  *
  */
 
-echo $bunny->listPullZones();//Returns data for all Pull zones on account
+echo json_encode($bunny->listPullZones());//Returns data for all Pull zones on account
 //Here you will find the ID's for your pullZones
 
 //Examples using pull zone id: 1337
 
 //Individual pull zone data
-$bunny->pullZoneData(1337);
+echo json_encode($bunny->pullZoneData(26719));
 
 //List hostnames for a pull zone
 $bunny->pullZoneHostnames(1337);
@@ -78,6 +78,9 @@ $bunny->getStatistics();
  *
  */
 
+use Corbpie\BunnyCdn\BunnyAPIStorage;
+
+$bunny = new BunnyAPIStorage();
 //View all storage zones for account
 echo $bunny->listStorageZones();//Returns data for all Storage zones on account
 
@@ -86,6 +89,9 @@ $bunny->zoneConnect('homeimagebackups', '');//Create connection to 'homeimagebac
 
 //List folders for storage zone 'homeimagebackups'
 echo $bunny->listFolders();
+
+//Check if a folder (path) exists by using its path
+$bunny->folderExists('pets');//Returns true if exists
 
 //Create a new folder
 echo $bunny->createFolder('pets');//Creates a new folder called pets
@@ -110,12 +116,15 @@ echo $bunny->deleteFile('pets/puppy_fluffy/fluffy_young.jpg');//Deletes fluffy_y
 echo $bunny->deleteFolder('pets/puppy_fluffy/');
 echo $bunny->deleteFolder('pets/');
 
-
 /*
  *
  * Video stream API examples
  *
  */
+
+use Corbpie\BunnyCdn\BunnyAPIStream;
+
+$bunny = new BunnyAPIStream();
 
 //List collections for library 1234
 echo json_encode($bunny->getStreamCollections(1234));
