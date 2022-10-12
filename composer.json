@@ -1,6 +1,6 @@
 {
   "name": "corbpie/bunny-cdn-api",
-  "description": "Bunny net CDN API class for handling pull zones, video streaming, DNS and storage zones.",
+  "description": "Bunny net CDN API class for handling pull zones, storage zones, video streaming and DNS.",
   "type": "library",
   "license": "MIT",
   "minimum-stability": "stable",
@@ -17,7 +17,7 @@
     }
   ],
   "require": {
-    "php": ">=8.0",
+    "php": ">=8.1",
     "ext-ftp": "*",
     "ext-curl": "*"
   },
