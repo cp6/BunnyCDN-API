@@ -4,7 +4,6 @@ namespace Corbpie\BunnyCdn;
 
 class BunnyAPIDNS extends BunnyAPI
 {
-    //Bunny DNS
     public function getDNSZones(int $page = 1, int $per_page = 1000): array
     {
         return $this->APIcall('GET', "dnszone?page=$page&perPage=$per_page");
