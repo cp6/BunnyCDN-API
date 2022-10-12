@@ -9,6 +9,15 @@ managing and using BunnyNet storage zones just got easier.
 [![Generic badge](https://img.shields.io/badge/version-1.9-blue.svg)]()
 [![Generic badge](https://img.shields.io/badge/PHP-8.1-purple.svg)]()
 
+## Index
+* [Features](#features)
+* [Installing & usage](#installing)
+* [Pullzone](#pullzone)
+* [Storage](#storage)
+* [Video streaming](#video)
+* [DNS]()
+* [Misc]()
+
 ### 1.9 changes
 * Updated project to have separate class files for each handler (Pull, Storage, Stream and DNS)
 * Added class `BunnyAPIPull` for pullzone interaction
@@ -29,6 +38,7 @@ If you want to interact with storage zones you will need your BunnyCDN API key s
 
 You can get this with ```listStorageZones()``` as it returns all the storage zone data/info for the account.
 
+<span id="features"></span>
 ## Features & abilities
 
 * List storage zones
@@ -71,6 +81,7 @@ You can get this with ```listStorageZones()``` as it returns all the storage zon
 * List pull zone HTTP access logs
 * Calculate costs
 
+<span id="installing"></span>
 ## Usage
 
 Install with composer:
@@ -111,7 +122,8 @@ $bunny->apiKey('XXXX-XXXX-XXXX');//Bunny api key
 
 ---
 
-### Storage zone interaction 
+<span id="storage"></span>
+### Storage zone interaction
 
 ```php
 require __DIR__ . '/vendor/autoload.php';
@@ -374,7 +386,7 @@ $bunny->listAll($location);
 returns `array`
 
 ---
-
+<span id="pullzone"></span>
 List all pull zones and data
 
 ```php
@@ -610,7 +622,7 @@ $bunny->closeConnection();
 ```
 
 ---
-
+<span id="video"></span>
 ### Video streaming zone interaction
 
 ```php
