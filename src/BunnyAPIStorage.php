@@ -49,19 +49,19 @@ class BunnyAPIStorage extends BunnyAPI
         return $this->APIcall('DELETE', "storagezone/$id");
     }
 
-    public function uploadFileHTTP(string $file, string $save_as = 'folder/filename.jpg'): void
+    public function uploadFileHTTP(string $file, string $save_as = 'folder/filename.jpg'): array
     {
-        $this->APIcall('PUT', $this->storage_name . "/" . $save_as, array('file' => $file), 'STORAGE');
+        return $this->APIcall('PUT', $this->storage_name . "/" . $save_as, array('file' => $file), 'STORAGE');
     }
 
-    public function deleteFileHTTP(string $file): void
+    public function deleteFileHTTP(string $file): array
     {
-        $this->APIcall('DELETE', $this->storage_name . "/" . $file, array(), 'STORAGE');
+        return $this->APIcall('DELETE', $this->storage_name . "/" . $file, array(), 'STORAGE');
     }
 
-    public function downloadFileHTTP(string $file): void
+    public function downloadFileHTTP(string $file): array
     {
-        $this->APIcall('GET', $this->storage_name . "/" . $file, array(), 'STORAGE');
+        return $this->APIcall('GET', $this->storage_name . "/" . $file, array(), 'STORAGE');
     }
 
     public function folderExists(string $path): bool
