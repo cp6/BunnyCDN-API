@@ -96,10 +96,15 @@ class BunnyAPI
         $result = curl_exec($curl);
         $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
-        if ($responseCode === 200) {
-            return $this->data = json_decode($result, true);
+        
+        if ($responseCode >= 200 && $responseCode < 300) {
+            return json_decode($result, true) ?? [];
+        } else {
+            return [
+                'http_code' => $responseCode,
+                'response' => json_decode($result, true),
+            ];
         }
-        return array('http_code' => $responseCode);
     }
 
     public function purgeCache(string $url): array
