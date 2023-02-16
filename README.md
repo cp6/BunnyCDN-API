@@ -6,21 +6,27 @@ BunnyCDN) pull, video streaming, DNS and storage zones [API](https://docs.bunny.
 This class whilst having a main focus on storage zone interaction includes pull zone features. Combining API with FTP,
 managing and using BunnyNet storage zones just got easier.
 
-[![Generic badge](https://img.shields.io/badge/version-1.9-blue.svg)]()
-[![Generic badge](https://img.shields.io/badge/PHP-8.1-purple.svg)]()
+[![Generic badge](https://img.shields.io/badge/version-1.9.2-blue.svg)]()
+[![Generic badge](https://img.shields.io/badge/PHP-8.2-purple.svg)]()
 
-### 1.9 changes
-* Updated project to have separate class files for each handler (Pull, Storage, Stream and DNS)
-* Added class `BunnyAPIPull` for pullzone interaction
-* Added class `BunnyAPIStorage` for storage interaction
-* Added class `BunnyAPIStream` for video stream interaction
-* Added class `BunnyAPIDNS` for DNS interaction
+## Index
+* [Features](#features)
+* [Installing & usage](#installing)
+* [Pullzone](#pullzone)
+* [Storage](#storage)
+* [Video streaming](#video)
+* [DNS]()
+* [Misc]()
+
+### 1.9.2 changes
+* Updated project to be PHP version 8.2 as a minimum
 
 ### TODO
 * Sort (features) and index the readme
-* Create separate example files for each (pull, storage, video/stream and DNS)
 
 ### Requirements
+
+* PHP 8.2
 
 For Pull zone, billing and statistics API interaction you will need your BunnyNet API key, this is found in your
 dashboard in the My Account section.
@@ -29,6 +35,7 @@ If you want to interact with storage zones you will need your BunnyCDN API key s
 
 You can get this with ```listStorageZones()``` as it returns all the storage zone data/info for the account.
 
+<span id="features"></span>
 ## Features & abilities
 
 * List storage zones
@@ -71,6 +78,7 @@ You can get this with ```listStorageZones()``` as it returns all the storage zon
 * List pull zone HTTP access logs
 * Calculate costs
 
+<span id="installing"></span>
 ## Usage
 
 Install with composer:
@@ -111,7 +119,8 @@ $bunny->apiKey('XXXX-XXXX-XXXX');//Bunny api key
 
 ---
 
-### Storage zone interaction 
+<span id="storage"></span>
+### Storage zone interaction
 
 ```php
 require __DIR__ . '/vendor/autoload.php';
@@ -374,7 +383,7 @@ $bunny->listAll($location);
 returns `array`
 
 ---
-
+<span id="pullzone"></span>
 List all pull zones and data
 
 ```php
@@ -610,7 +619,7 @@ $bunny->closeConnection();
 ```
 
 ---
-
+<span id="video"></span>
 ### Video streaming zone interaction
 
 ```php
