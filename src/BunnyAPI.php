@@ -17,6 +17,8 @@ class BunnyAPI
     protected $connection;
     private array $data;
 
+    public bool $debug_request = false;
+
     public function __construct()
     {
         try {
@@ -95,21 +97,36 @@ class BunnyAPI
 
         $result = curl_exec($curl);
         $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $debug_info = curl_getinfo($curl);
         curl_close($curl);
-        
-        if ($responseCode >= 200 && $responseCode < 300) {
-            return json_decode($result, true) ?? [];
-        } else {
+
+        if ($this->debug_request) {
+            return $debug_info;
+        }
+
+        if ($responseCode === 204) {
             return [
                 'http_code' => $responseCode,
                 'response' => json_decode($result, true),
             ];
         }
+
+        if ($responseCode >= 200 && $responseCode < 300) {
+            return json_decode($result, true) ?? [];
+        }
+
+        return [
+            'http_code' => $responseCode,
+            'response' => json_decode($result, true),
+        ];
     }
 
-    public function purgeCache(string $url): array
+    public function purgeCache(string $url, bool $async = false): array
     {
-        return $this->APIcall('POST', 'purge', array("url" => $url));
+        if ($async) {
+            $url .= "&async=true";
+        }
+        return $this->APIcall('POST', "purge?url=$url");
     }
 
     public function convertBytes(int $bytes, string $convert_to = 'GB', bool $format = true, int $decimals = 2): float|int|string
