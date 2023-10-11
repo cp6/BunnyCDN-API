@@ -89,6 +89,7 @@ class BunnyAPI
         } else {//Video stream
             curl_setopt($curl, CURLOPT_URL, self::VIDEO_STREAM_URL . $url);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: " . self::STREAM_LIBRARY_ACCESS_KEY, "Content-Type: application/*+json"));
+            curl_setopt($curl, CURLOPT_POSTFIELDS, file_get_contents($params['file']));
         }
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
