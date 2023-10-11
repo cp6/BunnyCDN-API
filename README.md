@@ -1,15 +1,16 @@
-# BunnyCDN API Class
+# BunnyNET CDN API Class
 
 The most comprehensive, feature packed and easy to use PHP class for [bunny.net](https://bunny.net?ref=qxdxfxutxf) (
 BunnyCDN) pull, video streaming, DNS and storage zones [API](https://docs.bunny.net/reference/bunnynet-api-overview).
 
-This class whilst having a main focus on storage zone interaction includes pull zone features. Combining API with FTP,
+This class whilst having a main focus on storage zone interaction includes pull zone features, DNS, Video streaming and
+more. Combining API with FTP,
 managing and using BunnyNet storage zones just got easier.
 
-[![Generic badge](https://img.shields.io/badge/version-1.9.2-blue.svg)]()
+[![Generic badge](https://img.shields.io/badge/version-1.9.5-blue.svg)]()
 [![Generic badge](https://img.shields.io/badge/PHP-8.2-purple.svg)]()
 
-## Index
+## Table of contents
 
 - [Features](#features)
 - [Installing & usage](#installing)
@@ -29,35 +30,79 @@ managing and using BunnyNet storage zones just got easier.
     - [Purge cache for a URL](#purge-url-pullzone)
     - [Pullzone logs are array](#logs-pullzone)
 - [Storage](#storage)
+    - [Connect to storage zone](#storagezone-connect)
+    - [List all storage zones](#storagezone-list)
+    - [Add storage zone](#add-storagezone)
+    - [Delete storage zone](#delete-storagezone)
+    - [Get directory size](#get-directory-size)
+    - [Return current directory](#current-directory)
+    - [Change directory](#change-directory)
+    - [Move to parent directory](#move-to-parent-directory)
+    - [Create folder in current directory](#create-folder)
+    - [Delete folder](#delete-folder)
+    - [Delete file](#delete-file)
+    - [Delete all files in a folder](#delete-all-files)
+    - [Rename a file](#rename-file)
+    - [Move a file](#move-file)
+    - [Download a file](#download-file)
+    - [Download all files in a directory](#download-all-files)
+    - [Upload a file](#upload-file)
+    - [Upload all files from a local folder](#upload-all-files)
+    - [Return storage zone files and folder data](#return-file-folder-data)
+    - [Return storage zone directory files formatted](#return-files-formatted)
+    - [Return storage zone directory folders formatted](#return-folders-formatted)
+    - [Return storage zone directory file and folders formatted](#return-file-folders-formatted)
 - [Video streaming](#video)
-   - [Set video library](#set-video-library)
-   - [Get video collections](#get-video-collection)
-   - [Set video collection GUID](#get-video-collection)
-   - [Get streams for collection](#get-streams-collection)
-   - [Update stream collection](#update-stream-collection)
-   - [Delete stream collection](#delete-stream-collection)
-   - [Create stream collection](#create-stream-collection)
-   - [List videos in library](#list-videos-library)
-   - [Get video information](#get-video)
-   - [Delete video](#delete-video)
-   - [Create video](#create-video)
-   - [Create video for collection](#create-video-collection)
-   - [Upload video](#upload-video)
-   - [Set thumbnail](#set-thumbnail)
-   - [Get video resolutions](#video-resolutions)
-   - [Get video size](#video-size)
-   - [Add captions](#add-captions)
-   - [Delete captions](#delete-captions)
-- [DNS]()
+    - [Set video library](#set-video-library)
+    - [Get video collections](#get-video-collection)
+    - [Set video collection GUID](#get-video-collection)
+    - [Get streams for collection](#get-streams-collection)
+    - [Update stream collection](#update-stream-collection)
+    - [Delete stream collection](#delete-stream-collection)
+    - [Create stream collection](#create-stream-collection)
+    - [List videos in library](#list-videos-library)
+    - [Get video information](#get-video)
+    - [Delete video](#delete-video)
+    - [Create video](#create-video)
+    - [Create video for collection](#create-video-collection)
+    - [Upload video](#upload-video)
+    - [Set thumbnail](#set-thumbnail)
+    - [Get video resolutions](#video-resolutions)
+    - [Get video size](#video-size)
+    - [Add captions](#add-captions)
+    - [Delete captions](#delete-captions)
+- [DNS](#dns)
+    - [Get all DNS zones](#get-dns-zones)
+    - [Get DNS zone](#get-dns-zone)
+    - [Add DNS zone](#add-dns)
+    - [Add DNS zone full](#add-dns-full)
+    - [Delete DNS zone](#delete-dns)
+    - [Get DNS zone statistics](#get-dns-stats)
+    - [Update DNS zone nameservers](#update-nameservers)
+    - [Update DNS zone SOA email](#update-soa-email)
+    - [Add DNS record](#add-dns-record)
+    - [Add DNS A record](#add-a-record)
+    - [Add DNS AAAA record](#add-aaaa-record)
+    - [Add DNS CNAME record](#add-cname-record)
+    - [Add DNS MX record](#add-mx-record)
+    - [Add DNS TXT record](#add-txt-record)
+    - [Add DNS NS record](#add-ns-record)
+    - [Add DNS redirect record](#add-redirect)
+    - [Update DNS A record](#updated-a-record)
+    - [Update DNS AAAA record](#update-aaaa-record)
+    - [Disable DNS record](#disable-dns)
+    - [Enable DNS record](#enable-dns)
+    - [Delete DNS record](#delete-dns)
 - [Misc]()
 
-### 1.9.2 changes
+### 1.9.5 changes
 
-* Updated project to be PHP version 8.2 as a minimum
-
-### TODO
-
-* Sort (features) and index the readme
+* Fixed video stream upload files not working.
+* Fixed `purgeCache()` not working.
+* Added debug request option: `$bunny->debug_request = true` to view HTTP call information.
+* Added `$stream_library_access_key` and `streamLibraryAccessKey()` Can set
+  with `$bunny->stream_library_access_key = '';`
+* Updated table of contents in readme.
 
 ### Requirements
 
@@ -65,6 +110,9 @@ managing and using BunnyNet storage zones just got easier.
 
 For Pull zone, billing and statistics API interaction you will need your BunnyNet API key, this is found in your
 dashboard in the My Account section.
+
+The video streaming API you need the video stream library access key which is found in the settings for the library at
+bunny.net.
 
 If you want to interact with storage zones you will need your BunnyCDN API key set and the name of the storage zone.
 
@@ -96,6 +144,8 @@ You can get this with ```listStorageZones()``` as it returns all the storage zon
 * List all files formatted from storage zone directory
 * List all folders formatted from storage zone directory
 * List all formatted from storage zone directory
+* Create, edit and delete videos
+* Create, edit and delete DNS zones
 * Get usage statistics
 * Get billing data
 * View balance
@@ -137,7 +187,7 @@ echo $bunny->listPullZones();
 ```
 
 #### Setting API key:
-
+<span id="setting-api-key"></span>
 **option 1 (preferred)**
 
 Line 12 ```bunnyAPI.php```
@@ -173,6 +223,7 @@ $bunny = new BunnyAPIStorage();
 Storage zone name and access key for storage zone interaction (**not needed if just using pull zone functions**)
 
 Set ```$access_key = ''``` to obtain key automatically (storage name must be accurate)
+<span id="storagezone-connect"></span>
 
 ```php
 $bunny->zoneConnect($storagename, $access_key);
@@ -185,6 +236,7 @@ $bunny->zoneConnect($storagename, $access_key);
 ---
 
 List storage zones
+<span id="storagezone-list"></span>
 
 ```php
 $bunny->listStorageZones();
@@ -195,6 +247,7 @@ returns `array`
 ---
 
 Add a storage zone
+<span id="add-storagezone"></span>
 
 ```php
 $bunny->addStorageZone($newstoragezone);
@@ -205,6 +258,7 @@ $bunny->addStorageZone($newstoragezone);
 ---
 
 Delete a storage zone
+<span id="delete-storagezone"></span>
 
 ```php
 $bunny->deleteStorageZone($id);
@@ -215,6 +269,7 @@ $bunny->deleteStorageZone($id);
 ---
 
 Get directory size
+<span id="get-directory-size"></span>
 
 ```php
 $bunny->dirSize($dir);
@@ -225,6 +280,7 @@ $bunny->dirSize($dir);
 ---
 
 Return current directory
+<span id="current-directory"></span>
 
 ```php
 $bunny->currentDir();
@@ -235,6 +291,7 @@ returns `string`
 ---
 
 Change directory
+<span id="change-directory"></span>
 
 ```php
 $bunny->changeDir($dir);
@@ -245,6 +302,7 @@ $bunny->changeDir($dir);
 ---
 
 Move to parent directory
+<span id="move-to-parent-directory"></span>
 
 ```php
 $bunny->moveUpOne();
@@ -253,6 +311,7 @@ $bunny->moveUpOne();
 ---
 
 Create folder in current directory
+<span id="create-folder"></span>
 
 ```php
 $bunny->createFolder($newfolder);
@@ -263,6 +322,7 @@ $bunny->createFolder($newfolder);
 ---
 
 Delete folder
+<span id="delete-folder"></span>
 
 ```php
 $bunny->deleteFolder($name);
@@ -273,6 +333,7 @@ $bunny->deleteFolder($name);
 ---
 
 Delete a file
+<span id="delete-file"></span>
 
 ```php
 $bunny->deleteFile($name);
@@ -283,6 +344,7 @@ $bunny->deleteFile($name);
 ---
 
 Delete all files in a folder
+<span id="delete-all-files"></span>
 
 ```php
 $bunny->deleteAllFiles($dir);
@@ -295,6 +357,7 @@ $bunny->deleteAllFiles($dir);
 Rename a file
 
 BunnyCDN does not allow for ftp_rename so file copied to new name and then old file deleted.
+<span id="rename-file"></span>
 
 ```php
 $bunny->renameFile($directory, $old_file_name, $new_file_name);
@@ -309,6 +372,7 @@ $bunny->renameFile($directory, $old_file_name, $new_file_name);
 ---
 
 Move a file
+<span id="move-file"></span>
 
 ```php
 $bunny->moveFile($file, $move_to);
@@ -321,6 +385,7 @@ $bunny->moveFile($file, $move_to);
 ---
 
 Download a file
+<span id="download-file"></span>
 
 ```php
 $bunny->downloadFile($save_as, $get_file, $mode);
@@ -335,6 +400,7 @@ $bunny->downloadFile($save_as, $get_file, $mode);
 ---
 
 Download all files in a directory
+<span id="download-all-files"></span>
 
 ```php
 $bunny->downloadAll($dir_dl_from, $dl_into, $mode);
@@ -349,6 +415,7 @@ $bunny->downloadAll($dir_dl_from, $dl_into, $mode);
 ---
 
 Upload a file
+<span id="upload-file"></span>
 
 ```php
 $bunny->uploadFile($upload, $upload_as, $mode);
@@ -363,6 +430,7 @@ $bunny->uploadFile($upload, $upload_as, $mode);
 ---
 
 Upload all files from a local folder
+<span id="upload-all-files"></span>
 
 ```php
 $bunny->uploadAllFiles($dir, $place, $mode);
@@ -377,6 +445,7 @@ $bunny->uploadAllFiles($dir, $place, $mode);
 ---
 
 Return storage zone files and folder data (Original)
+<span id="return-file-folder-data"></span>
 
 ```php
 $bunny->listAllOG();
@@ -387,6 +456,7 @@ returns `array`
 ---
 
 Return storage zone directory files formatted
+<span id="return-files-formatted"></span>
 
 ```php
 $bunny->listFiles($location);
@@ -399,6 +469,7 @@ returns `array`
 ---
 
 Return storage zone directory folders formatted
+<span id="return-folders-formatted"></span>
 
 ```php
 $bunny->listFolders($location);
@@ -411,6 +482,7 @@ returns `array`
 ---
 
 Return storage zone directory file and folders formatted
+<span id="return-file-folders-formatted"></span>
 
 ```php
 $bunny->listAll($location);
@@ -538,10 +610,12 @@ $bunny->listBlockedIpPullZone($pullzone_id);
 Purge cache for a URL
 
 ```php
-$bunny->purgeCache($url);
+$bunny->purgeCache($url, $async = false);
 ```
 
 `$url` Purge cache for this url  `string`
+
+`$async` Dont wait for the purge before returning result  `bool`
 
 ---
 <span id="logs-pullzone"></span>
@@ -662,12 +736,18 @@ $bunny->closeConnection();
 
 ### Video streaming zone interaction
 
+Calling and setting stream library access key
+
 ```php
 require __DIR__ . '/vendor/autoload.php';
 
 use Corbpie\BunnyCdn\BunnyAPIStream;
 
 $bunny = new BunnyAPIStream();
+
+$bunny->streamLibraryAccessKey('XXXX-XXXXX-XXXX-XXXX');
+
+//Or set stream library access key at line 14 in BunnyAPI.php
 ```
 
 ---
@@ -915,5 +995,288 @@ $bunny->deleteCaptions($library_id, $video_guid, $srclang);
 `$video_guid` video guid `string`
 
 `$srclang` captions srclang `string`
+
+---
+
+### DNS zone interaction
+<span id="dns"></span>
+
+```php
+require __DIR__ . '/vendor/autoload.php';
+
+use Corbpie\BunnyCdn\BunnyAPIDNS;
+
+$bunny = new BunnyAPIDNS();
+
+```
+
+---
+
+<span id="get-dns-zones"></span>
+Get DNS all zones
+
+```php
+$bunny->getDNSZones();
+```
+
+`$library_id` stream library id `int`
+
+---
+<span id="get-dns-zone"></span>
+Get DNS zone
+
+```php
+$bunny->getDNSZone($zone_id);
+```
+
+`$zone_id` DNS zone id `int`
+
+---
+
+<span id="add-dns"></span>
+Add a DNS zone
+
+```php
+$bunny->addDNSZone($domain, $logging);
+```
+
+`$domain` domain name `string`
+`$logging` use logging `bool`
+
+---
+
+<span id="add-dns-full"></span>
+Add a DNS zone full
+
+```php
+$parameters = array(
+    'Domain' => 'zonedomain.com', 'NameserversDetected' => true, 'CustomNameserversEnabled' => true,
+    'Nameserver1' => 'customns1.com', 'Nameserver2' => 'customns2.com', 'SoaEmail' => 'contact@zonedomain.com',
+    'DateModified' => '2022-08-18 23:59:59', 'DateCreated' => '2022-08-18 23:59:59', 'NameserversNextCheck' => '2022-08-28 23:59:59',
+    'LoggingEnabled' => true, 'LoggingIPAnonymizationEnabled' => true
+);
+$bunny->addDNSZoneFull($parameters);
+```
+
+`$parameters` parameters to create `array`
+
+---
+
+<span id="delete-dns"></span>
+Delete DNS zone
+
+```php
+$bunny->deleteDNSZone($zone_id);
+```
+
+`$zone_id` DNS zone id `int`
+
+---
+
+<span id="get-dns-stats"></span>
+DNS zone statistics
+
+```php
+$bunny->getDNSZoneStatistics($zone_id);
+```
+
+`$zone_id` DNS zone id `int`
+
+---
+
+<span id="update-nameservers"></span>
+Update DNS nameservers
+
+```php
+$bunny->updateDNSZoneNameservers($zone_id, $custom_ns, $ns_one, $ns_two);
+```
+
+`$zone_id` DNS zone id `int`
+`$custom_ns` use custom nameservers `bool`
+`$ns_one` NS one `string`
+`$ns_two` NS two `string`
+
+---
+
+<span id="update-soa-email"></span>
+Update DNS SOA email
+
+```php
+$bunny->updateDNSZoneNameservers($zone_id, $soa_email);
+```
+
+`$zone_id` DNS zone id `int`
+`$soa_email` NS one `string`
+
+---
+
+<span id="add-dns-record"></span>
+Add a DNS record by using parameters https://docs.bunny.net/reference/dnszonepublic_addrecord
+
+```php
+$parameters = array('Type' => 0, 'Ttl' => 120, 'Accelerated' => true, 'Weight' => 200);
+$bunny->addDNSRecord($zone_id, $name, $value, $parameters);
+```
+
+`$zone_id` DNS zone id `int`
+`$name` name `string`
+`$value` IP address `string`
+`$parameters` `array`
+
+---
+
+<span id="add-a-record"></span>
+Add DNS A record
+
+```php
+$bunny->addDNSRecordA($zone_id, $hostname, $ipv4);
+```
+
+`$zone_id` DNS zone id `int`
+`$hostname` hostname `string`
+`$ipv4` IPv4 address `string`
+
+---
+
+<span id="add-aaaa-record"></span>
+Add DNS AAAA record
+
+```php
+$bunny->addDNSRecordAAAA($zone_id, $hostname, $ipv6);
+```
+
+`$zone_id` DNS zone id `int`
+`$hostname` hostname `string`
+`$ipv6` IPv6 address `string`
+
+---
+
+<span id="add-cname-record"></span>
+Add DNS CNAME record
+
+```php
+$bunny->addDNSRecordCNAME($zone_id, $hostname, $target);
+```
+
+`$zone_id` DNS zone id `int`
+`$hostname` hostname `string`
+`$target` `string`
+
+---
+
+<span id="add-mx-record"></span>
+Add DNS MX record
+
+```php
+$bunny->addDNSRecordMX($zone_id, $hostname, $mail, $priority);
+```
+
+`$zone_id` DNS zone id `int`
+`$hostname` hostname `string`
+`$mail` mail server `string`
+`$priority` `int`
+
+---
+
+<span id="add-txt-record"></span>
+Add DNS TXT record
+
+```php
+$bunny->addDNSRecordTXT($zone_id, $hostname, $content);
+```
+
+`$zone_id` DNS zone id `int`
+`$hostname` hostname `string`
+`$content` txt contents `string`
+
+---
+
+<span id="add-ns-record"></span>
+Add DNS NS record
+
+```php
+$bunny->addDNSRecordNS($zone_id, $hostname, $target);
+```
+
+`$zone_id` DNS zone id `int`
+`$hostname` hostname `string`
+`$target` `string`
+
+---
+
+<span id="add-redirect"></span>
+Add DNS redirect
+
+```php
+$bunny->addDNSRecordRedirect($zone_id, $hostname, $url);
+```
+
+`$zone_id` DNS zone id `int`
+`$hostname` hostname `string`
+`$url` redirect to `string`
+
+---
+
+<span id="updated-a-record"></span>
+Update DNS A record
+
+```php
+$bunny->updateDNSRecordA($zone_id, $dns_id, $hostname, $ipv4);
+```
+
+`$zone_id` DNS zone id `int`
+`$dns_id` DNS record id `int`
+`$hostname` hostname `string`
+`$ipv4` ipv4 address `string`
+
+---
+
+<span id="update-aaaa-record"></span>
+Update DNS AAAA record
+
+```php
+$bunny->updateDNSRecordAAAA($zone_id, $dns_id, $hostname, $ipv6);
+```
+
+`$zone_id` DNS zone id `int`
+`$dns_id` DNS record id `int`
+`$hostname` hostname `string`
+`$ipv6` ipv6 address `string`
+
+---
+
+<span id="disable-dns"></span>
+Disable DNS record
+
+```php
+$bunny->disableDNSRecord($zone_id, $dns_id);
+```
+
+`$zone_id` DNS zone id `int`
+`$dns_id` DNS record id `int`
+
+---
+
+<span id="enable-dns"></span>
+Enable DNS record
+
+```php
+$bunny->enableDNSRecord($zone_id, $dns_id);
+```
+
+`$zone_id` DNS zone id `int`
+`$dns_id` DNS record id `int`
+
+---
+
+<span id="delete-dns"></span>
+Delete DNS record
+
+```php
+$bunny->deleteDNSRecord($zone_id, $dns_id);
+```
+
+`$zone_id` DNS zone id `int`
+`$dns_id` DNS record id `int`
 
 ---
