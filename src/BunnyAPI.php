@@ -13,6 +13,8 @@ class BunnyAPI
     protected const HOSTNAME = 'storage.bunnycdn.com';//FTP hostname
     private const STREAM_LIBRARY_ACCESS_KEY = 'XXXX-XXXX-XXXX';
     protected string $api_key;
+
+    protected string $stream_library_access_key;
     protected string $access_key;
     protected $connection;
     private array $data;
@@ -26,6 +28,9 @@ class BunnyAPI
                 throw new BunnyAPIException("You must provide an API key");
             }
             $this->api_key = self::API_KEY;
+            if (!isset($this->stream_library_access_key)) {
+                $this->stream_library_access_key = self::STREAM_LIBRARY_ACCESS_KEY;
+            }
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
         }
@@ -38,6 +43,18 @@ class BunnyAPI
                 throw new BunnyAPIException('$api_key cannot be empty');
             }
             $this->api_key = $api_key;
+        } catch (BunnyAPIException $e) {//display error message
+            echo $e->errorMessage();
+        }
+    }
+
+    public function streamLibraryAccessKey(string $stream_library_access_key = ''): void
+    {
+        try {
+            if (!isset($stream_library_access_key) || trim($stream_library_access_key) === '') {
+                throw new BunnyAPIException('$stream_library_access_key cannot be empty');
+            }
+            $this->stream_library_access_key = $stream_library_access_key;
         } catch (BunnyAPIException $e) {//display error message
             echo $e->errorMessage();
         }
@@ -88,8 +105,10 @@ class BunnyAPI
             curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: $this->access_key"));
         } else {//Video stream
             curl_setopt($curl, CURLOPT_URL, self::VIDEO_STREAM_URL . $url);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: " . self::STREAM_LIBRARY_ACCESS_KEY, "Content-Type: application/*+json"));
-            curl_setopt($curl, CURLOPT_POSTFIELDS, file_get_contents($params['file']));
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array("AccessKey: " . $this->stream_library_access_key, "Content-Type: application/*+json"));
+            if ($method === "PUT") {
+                curl_setopt($curl, CURLOPT_POSTFIELDS, file_get_contents($params['file']));
+            }
         }
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
