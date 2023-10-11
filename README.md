@@ -10,18 +10,53 @@ managing and using BunnyNet storage zones just got easier.
 [![Generic badge](https://img.shields.io/badge/PHP-8.2-purple.svg)]()
 
 ## Index
-* [Features](#features)
-* [Installing & usage](#installing)
-* [Pullzone](#pullzone)
-* [Storage](#storage)
-* [Video streaming](#video)
-* [DNS]()
-* [Misc]()
+
+- [Features](#features)
+- [Installing & usage](#installing)
+    - [Setting API key](#setting-api-key)
+- [Pullzone](#pullzone)
+    - [List all pullzones](#list-pullzones)
+    - [List a pullzone](#list-pullzone)
+    - [Purge pullzone](#purge-pullzone)
+    - [Delete pullzone](#delete-pullzone)
+    - [List pullzone hostnames](#hostnames-pullzone)
+    - [Add hostname to pullzone](#add-hostname-pullzone)
+    - [Remove hostname from pullzone](#remove-hostname-pullzone)
+    - [Change ssl status for pullzone](#ssl-pullzone)
+    - [Add IP block for pullzone](#ip-block-pullzone)
+    - [Remove IP block for pullzone](#ip-unblock-pullzone)
+    - [List blocked IPs for pullzone](#ip-blocked-pullzone)
+    - [Purge cache for a URL](#purge-url-pullzone)
+    - [Pullzone logs are array](#logs-pullzone)
+- [Storage](#storage)
+- [Video streaming](#video)
+   - [Set video library](#set-video-library)
+   - [Get video collections](#get-video-collection)
+   - [Set video collection GUID](#get-video-collection)
+   - [Get streams for collection](#get-streams-collection)
+   - [Update stream collection](#update-stream-collection)
+   - [Delete stream collection](#delete-stream-collection)
+   - [Create stream collection](#create-stream-collection)
+   - [List videos in library](#list-videos-library)
+   - [Get video information](#get-video)
+   - [Delete video](#delete-video)
+   - [Create video](#create-video)
+   - [Create video for collection](#create-video-collection)
+   - [Upload video](#upload-video)
+   - [Set thumbnail](#set-thumbnail)
+   - [Get video resolutions](#video-resolutions)
+   - [Get video size](#video-size)
+   - [Add captions](#add-captions)
+   - [Delete captions](#delete-captions)
+- [DNS]()
+- [Misc]()
 
 ### 1.9.2 changes
+
 * Updated project to be PHP version 8.2 as a minimum
 
 ### TODO
+
 * Sort (features) and index the readme
 
 ### Requirements
@@ -36,6 +71,7 @@ If you want to interact with storage zones you will need your BunnyCDN API key s
 You can get this with ```listStorageZones()``` as it returns all the storage zone data/info for the account.
 
 <span id="features"></span>
+
 ## Features & abilities
 
 * List storage zones
@@ -79,6 +115,7 @@ You can get this with ```listStorageZones()``` as it returns all the storage zon
 * Calculate costs
 
 <span id="installing"></span>
+
 ## Usage
 
 Install with composer:
@@ -120,6 +157,7 @@ $bunny->apiKey('XXXX-XXXX-XXXX');//Bunny api key
 ---
 
 <span id="storage"></span>
+
 ### Storage zone interaction
 
 ```php
@@ -384,6 +422,7 @@ returns `array`
 
 ---
 <span id="pullzone"></span>
+<span id="list-pullzones"></span>
 List all pull zones and data
 
 ```php
@@ -393,7 +432,7 @@ $bunny->listPullZones();
 returns `array`
 
 ---
-
+<span id="list-pullzone"></span>
 List pull zones data for id
 
 ```php
@@ -405,7 +444,7 @@ $bunny->pullZoneData($id);
 returns `array`
 
 ---
-
+<span id="purge-pullzone"></span>
 Purge pull zone data
 
 ```php
@@ -415,7 +454,7 @@ $bunny->purgePullZone($id);
 `$id` Pull zone to purge `int`
 
 ---
-
+<span id="delete-pullzone"></span>
 Delete pull zone data
 
 ```php
@@ -425,7 +464,7 @@ $bunny->deletePullZone($id);
 `$id` Pull zone to delete `int`
 
 ---
-
+<span id="hostnames-pullzone"></span>
 Lists pullzone hostnames and amount
 
 ```php
@@ -433,7 +472,7 @@ $bunny->pullZoneHostnames($pullzone_id);
 ```
 
 ---
-
+<span id="add-hostname-pullzone"></span>
 Add hostname to pull zone
 
 ```php
@@ -445,7 +484,7 @@ $bunny->addHostnamePullZone($id, $hostname);
 `$hostname` Hostname to add `string`
 
 ---
-
+<span id="remove-hostname-pullzone"></span>
 Remove a hostname from pull zone
 
 ```php
@@ -457,7 +496,7 @@ $bunny->removeHostnamePullZone($id, $hostname);
 `$hostname` Hostname to remove `string`
 
 ---
-
+<span id="ssl-pullzone"></span>
 Change force SSL status for pull zone
 
 ```php
@@ -471,7 +510,7 @@ $bunny->forceSSLPullZone($id, $hostname, $force_ssl);
 `$force_ssl` True = on, FALSE = off  `bool`
 
 ---
-
+<span id="ip-block-pullzone"></span>
 Add ip to block for pullzone
 
 ```php
@@ -479,7 +518,7 @@ $bunny->addBlockedIpPullZone($pullzone_id, $ip, $db_log = false);
 ```
 
 ---
-
+<span id="ip-unblock-pullzone"></span>
 Un block an ip for pullzone
 
 ```php
@@ -487,7 +526,7 @@ $bunny->unBlockedIpPullZone($pullzone_id, $ip, $db_log = false);
 ```
 
 ---
-
+<span id="ip-blocked-pullzone"></span>
 List all blocked ip's for pullzone
 
 ```php
@@ -495,7 +534,7 @@ $bunny->listBlockedIpPullZone($pullzone_id);
 ```
 
 ---
-
+<span id="purge-url-pullzone"></span>
 Purge cache for a URL
 
 ```php
@@ -505,7 +544,7 @@ $bunny->purgeCache($url);
 `$url` Purge cache for this url  `string`
 
 ---
-
+<span id="logs-pullzone"></span>
 Pull zone logs as formatted array
 
 ```php
@@ -620,6 +659,7 @@ $bunny->closeConnection();
 
 ---
 <span id="video"></span>
+
 ### Video streaming zone interaction
 
 ```php
@@ -629,10 +669,11 @@ use Corbpie\BunnyCdn\BunnyAPIStream;
 
 $bunny = new BunnyAPIStream();
 ```
+
 ---
 
 **You can only get the video library id from your bunny.net stream library page**
-
+<span id="set-video-library"></span>
 Set video stream library id
 
 ```php
@@ -662,7 +703,6 @@ $bunny->setStreamCollectionGuid($collection_guid);
 `$collection_guid` video collection guid `string`
 
 ---
-
 Set video guid
 
 ```php
@@ -672,7 +712,7 @@ $bunny->setStreamVideoGuid($video_guid);
 `$video_guid` video guid `string`
 
 ---
-
+<span id="get-video-collection"></span>
 Get video collections for library id
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -688,7 +728,7 @@ $bunny->getStreamCollections($page, $items_pp,$order_by);
 `$order_by` order by `string`
 
 ---
-
+<span id="get-streams-collection"></span>
 Get streams for a collection
 
 Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()``` to be set.
@@ -698,7 +738,7 @@ $bunny->getStreamForCollection();
 ```
 
 ---
-
+<span id="update-stream-collection"></span>
 Update stream collection
 
 Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()``` to be set.
@@ -710,7 +750,7 @@ $bunny->updateCollection($updated_collection_name);
 `$updated_collection_name` the name to update video collection to `string`
 
 ---
-
+<span id="delete-stream-collection"></span>
 Delete stream collection
 
 Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()``` to be set.
@@ -720,7 +760,7 @@ $bunny->deleteCollection();
 ```
 
 ---
-
+<span id="create-stream-collection"></span>
 Create stream collection
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -732,7 +772,7 @@ $bunny->createCollection($new_collection_name);
 `$new_collection_name` the name for your new video collection `string`
 
 ---
-
+<span id="list-videos-library"></span>
 List videos for library
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -744,7 +784,7 @@ $bunny->listVideos($collection_guid);
 `$collection_guid` video collection guid `string`
 
 ---
-
+<span id="get-video"></span>
 Get video information
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -756,7 +796,7 @@ $bunny->getVideo($collection_guid);
 `$collection_guid` video collection guid `string`
 
 ---
-
+<span id="delete-video"></span>
 Delete video
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -770,7 +810,7 @@ $bunny->deleteVideo($collection_guid);
 `$collection_guid` video collection guid `string`
 
 ---
-
+<span id="create-video"></span>
 Create video
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -783,7 +823,7 @@ $bunny->createVideo($video_title);
 
 
 ---
-
+<span id="create-video-collection"></span>
 Create video for collection
 
 Requires ```setStreamLibraryId()``` and ```setStreamCollectionGuid()```  to be set.
@@ -795,7 +835,7 @@ $bunny->createVideoForCollection($video_title);
 `$video_title` video title `string`
 
 ---
-
+<span id="upload-video"></span>
 Upload video
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -811,7 +851,7 @@ $bunny->uploadVideo($video_guid, $video_to_upload);
 `$video_to_upload` video filename `string`
 
 ---
-
+<span id="set-thumbnail"></span>
 Set thumbnail for video
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -825,7 +865,7 @@ $bunny->setThumbnail($video_guid, $thumbnail_url);
 `$thumbnail_url` image url `string`
 
 ---
-
+<span id="video-resolutions"></span>
 Get video resolutions
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -835,7 +875,7 @@ $bunny->videoResolutionsArray($video_guid);
 ```
 
 ---
-
+<span id="video-size"></span>
 Get video size
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -845,7 +885,7 @@ $bunny->videoSize($video_guid);
 ```
 
 ---
-
+<span id="add-captions"></span>
 Add captions
 
 Requires ```setStreamLibraryId()``` to be set.
@@ -863,7 +903,7 @@ $bunny->addCaptions($video_guid, $collection_guid, $label, $captions_file);
 `$captions_file` caption file URL `string`
 
 ---
-
+<span id="delete-captions"></span>
 Delete captions
 
 Requires ```setStreamLibraryId()``` to be set.
