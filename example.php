@@ -99,6 +99,9 @@ echo $bunny->createFolder('pets');//Creates a new folder called pets
 //Upload file into folder
 echo $bunny->uploadFile('fluffy.jpg', '/pets/fluffy.jpg');//Uploads fluffy.jpg as pets/fluffy.jpg
 
+//Check if a file exists by using its path and name
+$bunny->fileExists('pets/fluffy.jpg');//Returns true
+
 //Rename a file
 echo $bunny->renameFile('pets/', 'fluffy.jpg', 'fluffy_young.jpg');//Renames pets/fluffy.jpg as pets/fluffy_young.jpg
 

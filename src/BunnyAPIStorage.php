@@ -64,6 +64,11 @@ class BunnyAPIStorage extends BunnyAPI
         return $this->APIcall('GET', $this->storage_name . "/" . $file, array(), 'STORAGE');
     }
 
+    public function fileExists(string $file): bool
+    {
+        return ftp_size($this->connection, $file) >= 0;
+    }
+
     public function folderExists(string $path): bool
     {
         if (!ftp_nlist($this->connection, $path)) {

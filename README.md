@@ -37,6 +37,8 @@ managing and using BunnyNet storage zones just got easier.
     - [Get directory size](#get-directory-size)
     - [Return current directory](#current-directory)
     - [Change directory](#change-directory)
+    - [Check folder exists](#folder-exists)
+    - [Check file exists](#file-exists)
     - [Move to parent directory](#move-to-parent-directory)
     - [Create folder in current directory](#create-folder)
     - [Delete folder](#delete-folder)
@@ -298,6 +300,28 @@ $bunny->changeDir($dir);
 ```
 
 `$dir` directory navigation (FTP rules) `string`
+
+---
+
+Check folder exists
+<span id="folder-exists"></span>
+
+```php
+$bunny->folderExists($path);
+```
+
+`$path` the folder path `string`
+
+---
+
+Check file exists
+<span id="file-exists"></span>
+
+```php
+$bunny->fileExists($file);
+```
+
+`$file` the full file path including the filename `string`
 
 ---
 
