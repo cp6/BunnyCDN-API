@@ -1,11 +1,10 @@
 # BunnyNET CDN API Class
 
-The most comprehensive, feature packed and easy to use PHP class for [bunny.net](https://bunny.net?ref=qxdxfxutxf) (
+The most comprehensive, feature-packed and easy to use PHP class for [bunny.net](https://bunny.net?ref=qxdxfxutxf) (
 BunnyCDN) pull, video streaming, DNS and storage zones [API](https://docs.bunny.net/reference/bunnynet-api-overview).
 
 This class whilst having a main focus on storage zone interaction includes pull zone features, DNS, Video streaming and
-more. Combining API with FTP,
-managing and using BunnyNet storage zones just got easier.
+more. Combining API with FTP managing and using your BunnyNet storage zones just got easier.
 
 [![Generic badge](https://img.shields.io/badge/version-1.9.5-blue.svg)]()
 [![Generic badge](https://img.shields.io/badge/PHP-8.2-purple.svg)]()
