@@ -7,7 +7,7 @@ This class whilst having a main focus on storage zone interaction includes pull 
 more. Combining API with FTP managing and using your BunnyNet storage zones just got easier.
 
 [![Generic badge](https://img.shields.io/badge/version-1.9.5-blue.svg)]()
-[![Generic badge](https://img.shields.io/badge/PHP-8.2-purple.svg)]()
+[![Generic badge](https://img.shields.io/badge/PHP-8.2-and-above-purple.svg)]()
 
 ## Table of contents
 
