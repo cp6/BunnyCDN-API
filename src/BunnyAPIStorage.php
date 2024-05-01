@@ -79,10 +79,13 @@ class BunnyAPIStorage extends BunnyAPI
 
     public function createFolder(string $name): array
     {
-        if (ftp_mkdir($this->connection, $name)) {
-            return array('response' => 'success', 'action' => __FUNCTION__, 'value' => $name);
+        if (@!ftp_chdir($this->connection, $name)) {
+            if (ftp_mkdir($this->connection, $name)) {
+                return array('response' => 'success', 'action' => __FUNCTION__, 'value' => $name);
+            }
+            return array('response' => 'fail', 'action' => __FUNCTION__, 'value' => $name, 'message' => "Failed to create directory $name");
         }
-        return array('response' => 'fail', 'action' => __FUNCTION__, 'value' => $name);
+        return array('response' => 'fail', 'action' => __FUNCTION__, 'value' => $name, 'message' => "Directory $name already exists");
     }
 
     public function deleteFolder(string $name): array
