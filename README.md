@@ -6,7 +6,7 @@ BunnyCDN) pull, video streaming, DNS and storage zones [API](https://docs.bunny.
 This class whilst having a main focus on storage zone interaction includes pull zone features, DNS, Video streaming and
 more. Combining API with FTP managing and using your BunnyNet storage zones just got easier.
 
-[![Generic badge](https://img.shields.io/badge/version-1.9.6-blue.svg)]()
+[![Generic badge](https://img.shields.io/badge/version-1.9.7-blue.svg)]()
 [![Generic badge](https://img.shields.io/badge/PHP-8.2-purple.svg)]()
 
 ## Table of contents
@@ -96,14 +96,11 @@ more. Combining API with FTP managing and using your BunnyNet storage zones just
     - [Delete DNS record](#delete-dns)
 - [Misc]()
 
-### 1.9.5 changes
+### 1.9.7 changes
 
-* Fixed video stream upload files not working.
-* Fixed `purgeCache()` not working.
-* Added debug request option: `$bunny->debug_request = true` to view HTTP call information.
-* Added `$stream_library_access_key` and `streamLibraryAccessKey()` Can set
-  with `$bunny->stream_library_access_key = '';`
-* Updated table of contents in readme.
+* Fixed dirSize() needing a slash
+* Fixed createFolder() throwing warning messages
+* Added fileExists()
 
 ### Requirements
 
