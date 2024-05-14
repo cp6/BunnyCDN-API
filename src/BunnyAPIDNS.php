@@ -66,13 +66,13 @@ class BunnyAPIDNS extends BunnyAPI
         return $this->APIcall('DELETE', "dnszone/$zone_id");
     }
 
-    public function addDNSRecord(int $zone_id, string $name, string $value, array $parameters = array()): array
+    public function addDNSRecord(int $zone_id, string $name, string $value, array $parameters = []): array
     {//Add DNS record by building up parameters from https://docs.bunny.net/reference/dnszonepublic_addrecord
         $parameters = array_merge(
-            array(
+            [
                 'Name' => $name,
                 'Value' => $value,
-            ),
+            ],
             $parameters
         );
         return $this->APIcall('PUT', "dnszone/$zone_id/records", $parameters);

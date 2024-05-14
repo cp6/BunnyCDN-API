@@ -270,7 +270,7 @@ Get directory size
 <span id="get-directory-size"></span>
 
 ```php
-$dir = "profiles/admin/images";
+$dir = "media/images/dogs";
 
 $bunny->dirSize($dir);
 ```
@@ -294,6 +294,8 @@ Change directory
 <span id="change-directory"></span>
 
 ```php
+$dir = "media/images/dogs";
+
 $bunny->changeDir($dir);
 ```
 
@@ -310,16 +312,22 @@ $bunny->folderExists($path);
 
 `$path` the folder path `string`
 
+Returns `bool`
+
 ---
 
 Check file exists
 <span id="file-exists"></span>
 
 ```php
+$file = "media/images/dogs/collie.jpg";
+
 $bunny->fileExists($file);
 ```
 
 `$file` the full file path including the filename `string`
+
+Returns `bool`
 
 ---
 
@@ -382,6 +390,10 @@ BunnyCDN does not allow for ftp_rename so file copied to new name and then old f
 <span id="rename-file"></span>
 
 ```php
+$directory = "media/images/dogs";
+$old_file_name = "collie.jpg";
+$new_file_name = "poodle.jpg";
+
 $bunny->renameFile($directory, $old_file_name, $new_file_name);
 ```
 
