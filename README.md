@@ -97,6 +97,7 @@ more. Combining API with FTP managing and using your BunnyNet storage zones just
 - [Misc]()
 
 ### 1.9.7 changes
+#### 14th May 2024
 
 * Fixed dirSize() needing a slash
 * Fixed createFolder() throwing warning messages
