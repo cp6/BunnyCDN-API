@@ -230,7 +230,7 @@ class BunnyAPIStorage extends BunnyAPI
         foreach ($array as $value) {
             if ($value['IsDirectory'] === false) {
                 $file_name = $value['ObjectName'];
-                if (ftp_get($this->connection, $dl_into . "$file_name", $file_name, $mode)) {
+                if (ftp_get($this->connection, $dl_into . (string)$file_name, $file_name, $mode)) {
                     $files_downloaded++;
                 }
             }
@@ -338,4 +338,5 @@ class BunnyAPIStorage extends BunnyAPI
         }
         return array('response' => 'fail', 'action' => __FUNCTION__);
     }
+
 }
