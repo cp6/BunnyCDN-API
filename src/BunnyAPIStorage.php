@@ -138,7 +138,7 @@ class BunnyAPIStorage extends BunnyAPI
 
     public function dirSize(string $dir = ''): array
     {
-        $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name" . $dir . "/?AccessKey=" . $this->access_key), true);
+        $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name/" . $dir . "/?AccessKey=" . $this->access_key), true);
         $size = $files = 0;
         foreach ($array as $value) {
             if ($value['IsDirectory'] === false) {
