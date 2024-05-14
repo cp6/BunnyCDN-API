@@ -322,11 +322,7 @@ class BunnyAPIStorage extends BunnyAPI
                 $file_type = null;
                 $size_kb = null;
             } else {
-                if (isset(pathinfo($value['ObjectName'])['extension'])) {
-                    $file_type = pathinfo($value['ObjectName'])['extension'];
-                } else {
-                    $file_type = null;
-                }
+                $file_type = pathinfo($value['ObjectName'])['extension'] ?? null;
                 $size_kb = (float)($value['Length'] / 1024);
             }
             $items['data'][] = array('name' => $file_name, 'file_type' => $file_type, 'size' => $size_kb, 'is_dir' => $value['IsDirectory'], 'created' => $created,
