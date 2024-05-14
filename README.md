@@ -273,6 +273,8 @@ Get directory size
 <span id="get-directory-size"></span>
 
 ```php
+$dir = "profiles/admin/images";
+
 $bunny->dirSize($dir);
 ```
 
