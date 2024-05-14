@@ -56,12 +56,12 @@ class BunnyAPIStorage extends BunnyAPI
 
     public function deleteFileHTTP(string $file): array
     {
-        return $this->APIcall('DELETE', $this->storage_name . "/" . $file, array(), 'STORAGE');
+        return $this->APIcall('DELETE', $this->storage_name . "/" . $file, [], 'STORAGE');
     }
 
     public function downloadFileHTTP(string $file): array
     {
-        return $this->APIcall('GET', $this->storage_name . "/" . $file, array(), 'STORAGE');
+        return $this->APIcall('GET', $this->storage_name . "/" . $file, [], 'STORAGE');
     }
 
     public function fileExists(string $file): bool
@@ -270,7 +270,7 @@ class BunnyAPIStorage extends BunnyAPI
     public function listFiles(string $location = ''): array
     {
         $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name" . $location . "/?AccessKey=" . $this->access_key), true);
-        $items = array('storage_name' => $this->storage_name, 'current_dir' => $location, 'data' => array());
+        $items = array('storage_name' => $this->storage_name, 'current_dir' => $location, 'data' => []);
         foreach ($array as $value) {
             if ($value['IsDirectory'] === false) {
                 $created = date('Y-m-d H:i:s', strtotime($value['DateCreated']));
@@ -293,15 +293,17 @@ class BunnyAPIStorage extends BunnyAPI
     public function listFolders(string $location = ''): array
     {
         $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name" . $location . "/?AccessKey=$this->access_key"), true);
-        $items = array('storage_name' => $this->storage_name, 'current_dir' => $location, 'data' => array());
+        $items = array('storage_name' => $this->storage_name, 'current_dir' => $location, 'data' => []);
         foreach ($array as $value) {
             $created = date('Y-m-d H:i:s', strtotime($value['DateCreated']));
             $last_changed = date('Y-m-d H:i:s', strtotime($value['LastChanged']));
-            $foldername = $value['ObjectName'];
+            $folder_name = $value['ObjectName'];
             $guid = $value['Guid'];
             if ($value['IsDirectory'] === true) {
-                $items['data'][] = array('name' => $foldername, 'created' => $created,
-                    'last_changed' => $last_changed, 'guid' => $guid);
+                $items['data'][] = [
+                    'name' => $folder_name, 'created' => $created,
+                    'last_changed' => $last_changed, 'guid' => $guid
+                ];
             }
         }
         return $items;
@@ -310,7 +312,7 @@ class BunnyAPIStorage extends BunnyAPI
     public function listAll(string $location = ''): array
     {
         $array = json_decode(file_get_contents(self::STORAGE_API_URL . "/$this->storage_name" . $location . "/?AccessKey=" . $this->access_key), true);
-        $items = array('storage_name' => $this->storage_name, 'current_dir' => $location, 'data' => array());
+        $items = array('storage_name' => $this->storage_name, 'current_dir' => $location, 'data' => []);
         foreach ($array as $value) {
             $created = date('Y-m-d H:i:s', strtotime($value['DateCreated']));
             $last_changed = date('Y-m-d H:i:s', strtotime($value['LastChanged']));
