@@ -332,7 +332,7 @@ Returns `bool`
 
 ---
 
-Move to parent directory
+Move to the parent directory
 <span id="move-to-parent-directory"></span>
 
 ```php
@@ -341,14 +341,16 @@ $bunny->moveUpOne();
 
 ---
 
-Create folder in current directory
+Create a folder in the current directory
 <span id="create-folder"></span>
 
 ```php
-$bunny->createFolder($newfolder);
+$new_folder = "dogs"
+
+$bunny->createFolder($new_folder);
 ```
 
-`$newfolder` Create a folder in current directory `string`
+`$new_folder` Create a folder in the current directory `string`
 
 ---
 
@@ -356,10 +358,10 @@ Delete folder
 <span id="delete-folder"></span>
 
 ```php
-$bunny->deleteFolder($name);
+$bunny->deleteFolder($folder_name);
 ```
 
-`$name` Name of folder to delete (must be empty) `string`
+`$folder_name` Name of the folder to delete (folder must be empty) `string`
 
 ---
 
@@ -387,7 +389,7 @@ $bunny->deleteAllFiles($dir);
 
 Rename a file
 
-BunnyCDN does not allow for ftp_rename so file copied to new name and then old file deleted.
+BunnyCDN does not allow for ftp_rename so file copied to a new name and then the old file is deleted.
 <span id="rename-file"></span>
 
 ```php
